@@ -1,0 +1,103 @@
+project:
+  name: llm-seo
+  query_file: queries.json
+
+llm:
+  default_provider: openai  # one of: openai, anthropic, google
+  temperature: 0.2
+  max_tokens: 800
+  timeout_seconds: 60
+  providers:
+    openai:
+      api_key_env: OPENAI_API_KEY
+      model: gpt-4o-mini
+    anthropic:  
+      api_key_env: ANTHROPIC_API_KEY
+      model: claude-sonnet-4-5-20250929
+    google:
+      api_key_env: GOOGLE_API_KEY
+      model: gemini-2.5-flash
+
+query_runner:
+  batch_size: 5
+  parallel_workers: 3
+
+
+
+# --------------------------------------------------------------------------------------
+
+# project:
+#   name: llm-seo
+#   description: >
+#     Runs keyword-focused SEO research with LLM-powered mention analysis.
+#   query_file: queries.json
+#   environment_file: .env
+#   output_dir: reports
+#   log_level: INFO
+
+# llm:
+#   default_provider: openai
+#   temperature: 0.15
+#   max_output_tokens: 1024
+#   request_timeout_seconds: 60
+#   retry_attempts: 3
+#   retry_backoff_seconds: 2
+#   providers:
+#     openai:
+#       enabled: true
+#       api_key_env: OPENAI_API_KEY
+#       model: gpt-4o-mini
+#       endpoint: https://api.openai.com/v1/chat/completions
+#     anthropic:
+#       enabled: false
+#       api_key_env: ANTHROPIC_API_KEY
+#       model: claude-3-5-sonnet-latest
+#       endpoint: https://api.anthropic.com/v1/messages
+#     google:
+#       enabled: false
+#       api_key_env: GOOGLE_API_KEY
+#       model: gemini-1.5-pro
+#       endpoint: https://generativelanguage.googleapis.com/v1beta/models
+
+# query_runner:
+#   batch_size: 5
+#   parallel_workers: 3
+#   cache_file: .cache/query_runner.jsonl
+#   dry_run: false
+#   rate_limits_per_minute:
+#     openai: 60
+#     anthropic: 20
+#     google: 15
+
+# mention_analyzer:
+#   snippet_limit: 20
+#   min_relevance_score: 0.25
+#   track_positive_keywords:
+#     - mention
+#     - backlinks
+#     - comparison
+#   track_negative_keywords:
+#     - complaint
+#     - outage
+#     - lawsuit
+#   output_columns:
+#     - query
+#     - url
+#     - domain
+#     - snippet
+#     - sentiment
+#     - score
+
+# reporting:
+#   export_formats:
+#     - csv
+#     - json
+#   primary_filename: seo_mentions
+#   include_timestamp: true
+
+# notifications:
+#   enabled: false
+#   webhook_url_env: NOTIFY_WEBHOOK_URL
+#   notify_on:
+#     - run_complete
+#     - run_failed
