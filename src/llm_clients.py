@@ -247,7 +247,7 @@ def ask_google(client: genai.Client, question: str, model: str) -> Dict[str, Any
         raise
 
 
-def ask_something() -> Optional[Dict[str, Any]]:
+def ask_something(question: Optional[str] = None) -> Optional[Dict[str, Any]]:
     
     try:
         provider_name = pick_provider()
@@ -265,7 +265,9 @@ def ask_something() -> Optional[Dict[str, Any]]:
             return None
         
         provider_key, client = built
-        question = input("\nAsk something: ").strip()
+        
+        if not question : 
+            question = input("\nAsk something: ").strip()
         
         if not question:
             logger.warning("Empty question provided")
