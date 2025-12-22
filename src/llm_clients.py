@@ -305,6 +305,63 @@ def ask_something(question: Optional[str] = None) -> Optional[Dict[str, Any]]:
         return None
 
 
+def ask_provider(provider_name: str, question: str) -> Optional[Dict[str, Any]]:
+    
+    try:
+        built = build_client(provider_name)
+        
+        if not built:
+            logger.error(f"Failed to build {provider_name}")
+            return None
+        
+        provider_key, client = built
+        model = get_provider_config(provider_key)["model"]
+        
+        if provider_key == "openai":
+            return ask_openai(client, question, model)
+        elif provider_key == "anthropic":
+            return ask_anthropic(client, question, model)
+        elif provider_key == "google":
+            return ask_google(client, question, model)
+    
+    except Exception as e:
+        logger.error(f"Error asking {provider_name}: {e}")
+        return None
+
+
+def ask_all_providers(question: str) -> Dict[str, Optional[Dict[str, Any]]]:
+    
+    providers = ["openai", "anthropic", "google"]
+    results = {}
+    
+    for provider in providers:
+        logger.info(f"Querying {provider}...")
+        results[provider] = ask_provider(provider, question)
+        time.sleep(2)  # Delay
+    
+    return results
+
+
+def pick_mode() -> Tuple[str, Optional[str]]:
+    
+    choice = input(
+        "How would you like to run queries?\n"
+        "  'all'    - Use all 3 LLMs for each query\n"
+        "  'gpt'    - Use only ChatGPT\n"
+        "  'claude' - Use only Claude\n"
+        "  'gemini' - Use only Gemini\n> "
+    ).strip().lower()
+    
+    if choice == "all":
+        return "all", None
+    
+    provider = pick_provider(choice)
+    if provider:
+        return "single", provider
+    
+    logger.warning(f"THere is not {choice}, defaulting to 'all'")
+    return "all", None
+
 if __name__ == "__main__":
     print("LLM Client Test\n")
     response = ask_something()
