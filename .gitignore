@@ -37,3 +37,7 @@ Thumbs.db
 # Poetry
 # -----------------------
 poetry.lock
+
+
+# -----------------------
+data/results

@@ -1,6 +1,7 @@
 import json
 from llm_clients import pick_mode, ask_provider, ask_all_providers
 import os
+from datetime import datetime
 
 class QueryOutput:
     def __init__(self, query_id, question, response):
@@ -25,9 +26,11 @@ class QueryRunner:
 
     @staticmethod
     def run_queries(data):
-        output_dir = 'data/results'
-        os.makedirs(output_dir, exist_ok=True)
-        
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        output_dir = f'data/results'
+        run_dir = os.path.join(output_dir, f'run_{timestamp}')
+        os.makedirs(run_dir, exist_ok=True)
+
         
         mode, provider = pick_mode()
         
@@ -45,7 +48,7 @@ class QueryRunner:
             output = QueryOutput(query_id, question, responses)
             
             
-            output_path = os.path.join(output_dir, f'output_{query_id}.json')
+            output_path = os.path.join(run_dir, f'output_{query_id}.json')
             with open(output_path, 'w') as outfile:
                 json.dump(output.to_dict(), outfile, indent=4)
             
