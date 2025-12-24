@@ -385,9 +385,3 @@ if __name__ == "__main__":
 # if __name__ == "__main__":
 #     test = aio.run(ask_all_providers("What is Python?"))
 #     print(test)
-
-
-
-"TODO implement async into this code: AsyncOpenAI, AsyncAnthropic"
-"rewrite ask() funtions"
-"rebuild query_runner to be async"
