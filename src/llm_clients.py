@@ -3,11 +3,11 @@ import time
 import logging
 from typing import Optional, Tuple, Dict, Any
 
-from openai import OpenAI, OpenAIError, RateLimitError
-from anthropic import Anthropic, APIError, RateLimitError as AnthropicRateLimitError
+from openai import AsyncOpenAI, OpenAIError, RateLimitError
+from anthropic import AsyncAnthropic, APIError, RateLimitError as AnthropicRateLimitError
 from google import genai
 from google.api_core import exceptions as google_exceptions
-
+import asyncio as aio
 from src.config_loader import get_provider_config
 
 # Setup logging
@@ -74,7 +74,7 @@ def build_client(name: Optional[str] = None) -> Optional[Tuple[str, Any]]:
             validate_api_key("OpenAI", api_key)
             
             logger.info("Building OpenAI client")
-            return "openai", OpenAI(api_key=api_key)
+            return "openai", AsyncOpenAI(api_key=api_key)
         
         elif provider_name == "anthropic":
             provider_cfg = get_provider_config("anthropic")
@@ -82,7 +82,7 @@ def build_client(name: Optional[str] = None) -> Optional[Tuple[str, Any]]:
             validate_api_key("Anthropic", api_key)
             
             logger.info("Building Anthropic client")
-            return "anthropic", Anthropic(api_key=api_key)
+            return "anthropic", AsyncAnthropic(api_key=api_key)
         
         elif provider_name == "google":
             provider_cfg = get_provider_config("google")
@@ -90,7 +90,7 @@ def build_client(name: Optional[str] = None) -> Optional[Tuple[str, Any]]:
             validate_api_key("Google", api_key)
             
             logger.info("Building Google Gemini client")
-            return "google", genai.Client(api_key=api_key)
+            return "google", genai.Client(api_key=api_key).aio
         
         else:
             raise ProviderNotFoundError(f"Provider '{provider_name}' is not supported")
@@ -103,7 +103,7 @@ def build_client(name: Optional[str] = None) -> Optional[Tuple[str, Any]]:
         raise
 
 
-def call_with_retry(
+async def call_with_retry(
     func,
     max_retries: int = 3,
     initial_delay: float = 2.0,
@@ -116,7 +116,7 @@ def call_with_retry(
     
     for attempt in range(max_retries):
         try:
-            return func()
+            return await func()
         
         except (RateLimitError, AnthropicRateLimitError, google_exceptions.ResourceExhausted) as e:
             last_exception = e
@@ -125,7 +125,7 @@ def call_with_retry(
                     f"Rate limit hit (attempt {attempt + 1}/{max_retries}). "
                     f"Retrying in {delay:.1f}s..."
                 )
-                time.sleep(delay)
+                await aio.sleep(delay)
                 delay *= backoff_factor
             else:
                 logger.error(f"Rate limit exceeded after {max_retries} attempts")
@@ -137,10 +137,9 @@ def call_with_retry(
     raise last_exception
 
 
-def ask_openai(client: OpenAI, question: str, model: str) -> Dict[str, Any]:
-    
-    def _call():
-        response = client.chat.completions.create(
+async def ask_openai(client: AsyncOpenAI, question: str, model: str) -> Dict[str, Any]:
+    async def _call():
+        response = await client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -153,7 +152,7 @@ def ask_openai(client: OpenAI, question: str, model: str) -> Dict[str, Any]:
     
     try:
         logger.info(f"Calling OpenAI with model: {model}")
-        response = call_with_retry(_call)
+        response = await call_with_retry(_call)
         
         result = {
             "text": response.choices[0].message.content,
@@ -171,14 +170,14 @@ def ask_openai(client: OpenAI, question: str, model: str) -> Dict[str, Any]:
         logger.error(f"OpenAI API error: {e}")
         raise
     except Exception as e:
-        logger.error(f"Unexpected error calling OpenAI: {e}")
+        logger.error(f"Error calling OpenAI: {e}")
         raise
 
 
-def ask_anthropic(client: Anthropic, question: str, model: str) -> Dict[str, Any]:
+async def ask_anthropic(client: AsyncAnthropic, question: str, model: str) -> Dict[str, Any]:
     
-    def _call():
-        response = client.messages.create(
+    async def _call():
+        response = await client.messages.create(
             model=model,
             max_tokens=512,
             messages=[
@@ -192,7 +191,7 @@ def ask_anthropic(client: Anthropic, question: str, model: str) -> Dict[str, Any
     
     try:
         logger.info(f"Calling Anthropic with model: {model}")
-        response = call_with_retry(_call)
+        response =  await call_with_retry(_call)
         
         result = {
             "text": response.content[0].text,
@@ -210,14 +209,14 @@ def ask_anthropic(client: Anthropic, question: str, model: str) -> Dict[str, Any
         logger.error(f"Anthropic API error: {e}")
         raise
     except Exception as e:
-        logger.error(f"Unexpected error calling Anthropic: {e}")
+        logger.error(f"Error calling Anthropic: {e}")
         raise
 
 
-def ask_google(client: genai.Client, question: str, model: str) -> Dict[str, Any]:
+async def ask_google(client: genai.Client, question: str, model: str) -> Dict[str, Any]:
     
-    def _call():
-        response = client.models.generate_content(
+    async def _call():
+        response = await client.models.generate_content(
             model=model,
             contents=question
         )
@@ -225,7 +224,7 @@ def ask_google(client: genai.Client, question: str, model: str) -> Dict[str, Any
     
     try:
         logger.info(f"Calling Google Gemini with model: {model}")
-        response = call_with_retry(_call)
+        response = await call_with_retry(_call)
         
         result = {
             "text": response.text,
@@ -305,7 +304,7 @@ def ask_something(question: Optional[str] = None) -> Optional[Dict[str, Any]]:
         return None
 
 
-def ask_provider(provider_name: str, question: str) -> Optional[Dict[str, Any]]:
+async def ask_provider(provider_name: str, question: str) -> Optional[Dict[str, Any]]:
     
     try:
         built = build_client(provider_name)
@@ -318,28 +317,33 @@ def ask_provider(provider_name: str, question: str) -> Optional[Dict[str, Any]]:
         model = get_provider_config(provider_key)["model"]
         
         if provider_key == "openai":
-            return ask_openai(client, question, model)
+            return await ask_openai(client, question, model)
         elif provider_key == "anthropic":
-            return ask_anthropic(client, question, model)
+            return await ask_anthropic(client, question, model)
         elif provider_key == "google":
-            return ask_google(client, question, model)
+            return await ask_google(client, question, model)
     
     except Exception as e:
         logger.error(f"Error asking {provider_name}: {e}")
         return None
 
 
-def ask_all_providers(question: str) -> Dict[str, Optional[Dict[str, Any]]]:
+async def ask_all_providers(question: str) -> Dict[str, Optional[Dict[str, Any]]]:
     
-    providers = ["openai", "anthropic", "google"]
-    results = {}
+
+    responses = await aio.gather(
+    ask_provider("openai", question),
+    ask_provider("anthropic", question),
+    ask_provider("google", question)
+    )
+
     
-    for provider in providers:
-        logger.info(f"Querying {provider}...")
-        results[provider] = ask_provider(provider, question)
-        time.sleep(2)  # Delay
-    
-    return results
+
+    return {
+    "openai": responses[0],
+    "anthropic": responses[1],
+    "google": responses[2]
+    }
 
 
 def pick_mode() -> Tuple[str, Optional[str]]:
@@ -365,7 +369,8 @@ def pick_mode() -> Tuple[str, Optional[str]]:
 if __name__ == "__main__":
     print("LLM Client Test\n")
     response = ask_something()
-    
+
+
     if response:
         print("\n" + "-"*50)
         print("RESPONSE:")
@@ -376,3 +381,13 @@ if __name__ == "__main__":
         print(f"Tokens: {response['tokens']['total']} "
               f"(in: {response['tokens']['input']}, out: {response['tokens']['output']})")
         print("-"*50)
+
+# if __name__ == "__main__":
+#     test = aio.run(ask_all_providers("What is Python?"))
+#     print(test)
+
+
+
+"TODO implement async into this code: AsyncOpenAI, AsyncAnthropic"
+"rewrite ask() funtions"
+"rebuild query_runner to be async"
