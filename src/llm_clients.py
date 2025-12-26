@@ -368,7 +368,7 @@ def pick_mode() -> Tuple[str, Optional[str]]:
 
 if __name__ == "__main__":
     print("LLM Client Test\n")
-    response = ask_something()
+    response = aio.run(ask_something("what is dota 2?"))
 
 
     if response:
@@ -382,6 +382,3 @@ if __name__ == "__main__":
               f"(in: {response['tokens']['input']}, out: {response['tokens']['output']})")
         print("-"*50)
 
-# if __name__ == "__main__":
-#     test = aio.run(ask_all_providers("What is Python?"))
-#     print(test)
