@@ -2,6 +2,7 @@ import json
 from llm_clients import pick_mode, ask_provider, ask_all_providers
 import os
 from datetime import datetime
+import asyncio as aio
 
 class QueryOutput:
     def __init__(self, query_id, question, response):
@@ -25,24 +26,23 @@ class QueryRunner:
         return queries
 
     @staticmethod
-    def run_queries(data):
+    async def run_queries(data):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         output_dir = f'data/results'
         run_dir = os.path.join(output_dir, f'run_{timestamp}')
         os.makedirs(run_dir, exist_ok=True)
 
-        
         mode, provider = pick_mode()
-        
+
         for query in data['queries']:
             query_id = query['id']
             question = query['query']
             
             
             if mode == "all":
-                responses = ask_all_providers(question)
+                responses = await ask_all_providers(question)
             else:
-                responses = {provider: ask_provider(provider, question)}
+                responses = {provider: await ask_provider(provider, question)}
             
             
             output = QueryOutput(query_id, question, responses)
@@ -57,4 +57,4 @@ class QueryRunner:
 
 if __name__ == "__main__":
     data = QueryRunner.load_queries()
-    QueryRunner.run_queries(data)
+    aio.run(QueryRunner.run_queries(data))
