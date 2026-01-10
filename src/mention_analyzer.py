@@ -29,11 +29,20 @@ def load_answers(run_dir=None):
 
 
 def load_brands():
-     with open(f'data/brands.json', 'r') as file:
-          brands = json.load(file)
-          return brands
+     with open(f'data/entries/brands.json', 'r') as file:
+        brands = json.load(file)
+        target = brands['target']['aliases']
+        competitors = [brand['aliases'] for brand in brands['competitors']]
+        return target, competitors
+     
+print(load_brands())
 
 
 
 
-print(load_answers())
+# print(load_answers())
+# print(load_brands())
+
+def mention_analyzer():
+    brands = load_brands()
+    
