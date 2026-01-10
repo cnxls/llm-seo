@@ -1,0 +1,52 @@
+{
+  "target": {
+    "name": "Obsidian",
+    "aliases": ["Obsidian", "Obsidian.md"]
+  },
+  "competitors": [
+    {
+      "name": "Notion",
+      "aliases": ["Notion", "Notion.so"]
+    },
+    {
+      "name": "Roam Research",
+      "aliases": ["Roam Research", "Roam"]
+    },
+    {
+      "name": "Logseq",
+      "aliases": ["Logseq"]
+    },
+    {
+      "name": "Tana",
+      "aliases": ["Tana"]
+    },
+    {
+      "name": "Heptabase",
+      "aliases": ["Heptabase"]
+    },
+    {
+      "name": "Evernote",
+      "aliases": ["Evernote"]
+    },
+    {
+      "name": "Apple Notes",
+      "aliases": ["Apple Notes"]
+    },
+    {
+      "name": "OneNote",
+      "aliases": ["OneNote", "Microsoft OneNote"]
+    },
+    {
+      "name": "Bear",
+      "aliases": ["Bear"]
+    },
+    {
+      "name": "Craft",
+      "aliases": ["Craft"]
+    },
+    {
+      "name": "Joplin",
+      "aliases": ["Joplin"]
+    }
+  ]
+}
