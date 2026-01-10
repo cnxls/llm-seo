@@ -1,7 +1,22 @@
 import re
 import json
 import os
-from query_runner import QueryRunner 
+from .query_runner import QueryRunner 
+
+
+class Answer:
+    def __init__(self, question_id, question, answer):
+        self.question_id = question_id
+        self.question = question
+        self.answer = answer
+
+    def to_dict(self):
+        return {
+            'id': self.question_id,
+            'question': self.question,
+            'answer': self.answer
+        }
+
 
 def load_answers(run_dir=None):
     base_path = 'data/results'
@@ -21,11 +36,21 @@ def load_answers(run_dir=None):
     for filename in output_files:
         file_path = os.path.join(run_path, filename)
         with open(file_path, 'r') as file:
-            results.append(json.load(file))
+            data = json.load(file)
+            for provider, response_data in data['response'].items():
 
-    results.sort(key=lambda x: x['id'])
+                if response_data is None:
+                    continue
+                    
+                answer = Answer(
+                    question_id=data['id'],
+                    question=data['question'],
+                    answer=response_data['text']
+                )
+                results.append(answer)
+    
+    results.sort(key=lambda x: x.question_id)
     return results
-
 
 
 def load_brands():
@@ -35,14 +60,10 @@ def load_brands():
         competitors = [brand['aliases'] for brand in brands['competitors']]
         return target, competitors
      
-print(load_brands())
-
-
-
-
+# print(load_brands())
 # print(load_answers())
 # print(load_brands())
 
 def mention_analyzer():
-    brands = load_brands()
-    
+    target, competitors = load_brands()
+    raw_answers = load_answers()
