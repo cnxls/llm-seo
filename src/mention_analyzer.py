@@ -32,7 +32,7 @@ def load_answers(run_dir=None):
     all_files = os.listdir(run_path)
     output_files = [f for f in all_files if f.startswith('output_') and f.endswith('.json')]
 
-    results = []
+    responses = []
     for filename in output_files:
         file_path = os.path.join(run_path, filename)
         with open(file_path, 'r') as file:
@@ -47,23 +47,42 @@ def load_answers(run_dir=None):
                     question=data['question'],
                     answer=response_data['text']
                 )
-                results.append(answer)
+                responses.append(answer)
     
-    results.sort(key=lambda x: x.question_id)
-    return results
+    responses.sort(key=lambda x: x.question_id)
+    return responses
 
 
 def load_brands():
+     competitors = {}
      with open(f'data/entries/brands.json', 'r') as file:
         brands = json.load(file)
         target = brands['target']['aliases']
-        competitors = [brand['aliases'] for brand in brands['competitors']]
+        for brand in brands['competitors']:
+            competitors[brand['name']] = brand['aliases']
         return target, competitors
-     
-# print(load_brands())
-# print(load_answers())
-# print(load_brands())
 
-def mention_analyzer():
-    target, competitors = load_brands()
-    raw_answers = load_answers()
+
+
+class MentionsAnalyzer:
+    @staticmethod
+    def detect_mentions(text = str, target = list,competitors = dict):
+        text_lower = text.lower()
+        results = []
+        
+        for brand_name in target:
+            pattern = r'\b' + re.escape(brand_name.lower()) + r'\b'
+            matches = list(re.finditer(pattern, text_lower))
+            if matches:
+                results.append({
+                    'brand': brand_name,
+                    'found': True,
+                    'count': len(matches),
+                    'positions': [match.start() for match in matches]
+                })
+        return results
+    
+    
+    def mention_analyzer(responses):
+        target, competitors = load_brands()
+        responses = responses
