@@ -68,21 +68,44 @@ class MentionsAnalyzer:
     @staticmethod
     def detect_mentions(text: str, target: list, competitors: dict):
         text_lower = text.lower()
+        text_length = len(text)
         mentions = []
         
-        for brand_name in target:
-            pattern = r'\b' + re.escape(brand_name.lower()) + r'\b'
+        target_matches = []
+        for alias in target:
+            pattern = r'\b' + re.escape(alias.lower()) + r'\b'
             matches = list(re.finditer(pattern, text_lower))
-            if matches:
-                mentions.append({
-                    'brand': brand_name,
-                    'found': True,
-                    'count': len(matches),
-                    'positions': [match.start() for match in matches],
-                    'answer_len' : len(text_lower)
-                })
+            target_matches.extend(matches)
+        
+        target_matches.sort(key=lambda m: m.start())
+        mentions.append({
+            'brand': 'Obsidian',
+            'is_target': True,
+            'found': len(target_matches) > 0,
+            'count': len(target_matches),
+            'first_position': target_matches[0].start() if target_matches else None,
+            'text_length': text_length
+        })
+        
+        for brand_name, aliases in competitors.items():
+            brand_matches = []
+            for alias in aliases:
+                pattern = r'\b' + re.escape(alias.lower()) + r'\b'
+                matches = list(re.finditer(pattern, text_lower))
+                brand_matches.extend(matches)
+            
+            brand_matches.sort(key=lambda m: m.start())
+            mentions.append({
+                'brand': brand_name,
+                'is_target': False,
+                'found': len(brand_matches) > 0,
+                'count': len(brand_matches),
+                'first_position': brand_matches[0].start() if brand_matches else None,
+                'text_length': text_length
+            })
+        
         return mentions
-    
+        
     @staticmethod
     def calculate_position_score( first_position: int, text_length: int):
         if first_position is None:
@@ -102,12 +125,20 @@ class MentionsAnalyzer:
         analysis_results = []
 
         for answer in responses:     
-            mentions = MentionsAnalyzer.detect_mentions()    
+            mentions = MentionsAnalyzer.detect_mentions(answer.answer, target, competitors)  
+            max_brand = max(mentions, key=lambda x: x['count'])['brand']
+              
             for mention in mentions:
                 analysis_results.append({
+                'question_id': answer.question_id,
                 'brand' : mention['brand'],
-                'max_occurances' : max(mentions, key=lambda x: x["count"])["brand"],
-                'score' : self.calculate_position_score(mention['positions'][0],mention['answer_len'])  
+                'is_target': mention['is_target'],
+                'found': mention['found'],
+                'count': mention['count'],
+                'most_mentioned' : max_brand,
+                'score' : self.calculate_position_score(
+                    mention['first_position'],
+                    mention['text_length'])  
                     })
                 
         return analysis_results
