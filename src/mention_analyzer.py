@@ -4,6 +4,7 @@ import os
 from .query_runner import QueryRunner 
 
 
+
 class Answer:
     def __init__(self, question_id, question, answer):
         self.question_id = question_id
@@ -142,3 +143,17 @@ class MentionsAnalyzer:
                     })
                 
         return analysis_results
+    
+    async def mention_analyzer_async(self, responses):
+        import asyncio as aio
+
+        chunk_size = 10
+        all_results = []
+        
+        for i in range(0, len(responses), chunk_size):
+            chunk = responses[i:i + chunk_size]
+            
+            result = await aio.to_thread(self.mention_analyzer, chunk)
+            all_results.extend(result)
+        
+        return all_results
