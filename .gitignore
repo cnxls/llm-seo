@@ -41,3 +41,5 @@ poetry.lock
 
 # -----------------------
 data/results
+tests/__pycache__/
+tests/test_query_runner.py
