@@ -8,7 +8,7 @@ from anthropic import AsyncAnthropic, APIError, RateLimitError as AnthropicRateL
 from google import genai
 from google.api_core import exceptions as google_exceptions
 import asyncio as aio
-from src.config_loader import get_provider_config
+from src.config_loader import get_provider_config, load_api_key
 
 # Setup logging
 logging.basicConfig(
@@ -50,14 +50,6 @@ def pick_provider(name: Optional[str] = None) -> Optional[str]:
     return provider
 
 
-def validate_api_key(provider_name: str, api_key: Optional[str]) -> None:
-    
-    if not api_key:
-        raise APIKeyMissingError(
-            f"API  for {provider_name} is missing. "
-            f"Check your .env file."
-        )
-
 
 def build_client(name: Optional[str] = None) -> Optional[Tuple[str, Any]]:
     
@@ -69,32 +61,23 @@ def build_client(name: Optional[str] = None) -> Optional[Tuple[str, Any]]:
     
     try:
         if provider_name == "openai":
-            provider_cfg = get_provider_config("openai")
-            api_key = os.getenv(provider_cfg["api_key_env"])
-            validate_api_key("OpenAI", api_key)
-            
+            api_key = load_api_key("openai")
             logger.info("Building OpenAI client")
             return "openai", AsyncOpenAI(api_key=api_key)
         
         elif provider_name == "anthropic":
-            provider_cfg = get_provider_config("anthropic")
-            api_key = os.getenv(provider_cfg["api_key_env"])
-            validate_api_key("Anthropic", api_key)
-            
+            api_key = load_api_key("anthropic")
             logger.info("Building Anthropic client")
             return "anthropic", AsyncAnthropic(api_key=api_key)
         
         elif provider_name == "google":
-            provider_cfg = get_provider_config("google")
-            api_key = os.getenv(provider_cfg["api_key_env"])
-            validate_api_key("Google", api_key)
-            
+            api_key = load_api_key("google")
             logger.info("Building Google Gemini client")
             return "google", genai.Client(api_key=api_key).aio
         
         else:
             raise ProviderNotFoundError(f"Provider '{provider_name}' is not supported")
-    
+        
     except KeyError as e:
         logger.error(f"Configuration error for {provider_name}: {e}")
         raise LLMClientError(f"Invalid configuration for {provider_name}")
@@ -285,9 +268,8 @@ def ask_something(question: Optional[str] = None) -> Optional[Dict[str, Any]]:
         elif provider_key == "google":
             return ask_google(client, question, model)
     
-    except APIKeyMissingError as e:
+    except ValueError as e:
         print(f"\n{e}")
-        print("Make sure your .env file contains the required API key")
         return None
     
     except (OpenAIError, APIError, google_exceptions.GoogleAPIError) as e:
