@@ -1,0 +1,23 @@
+project:
+  name: llm-seo
+  query_file: queries.json
+
+llm:
+  default_provider: openai  # one of: openai, anthropic, google
+  temperature: 0.2
+  max_tokens: 512
+  timeout_seconds: 60
+  providers:
+    openai:
+      api_key_env: OPENAI_API_KEY
+      model: gpt-4o-mini
+    anthropic:  
+      api_key_env: ANTHROPIC_API_KEY
+      model: claude-sonnet-4-5-20250929
+    google:
+      api_key_env: GOOGLE_API_KEY
+      model: gemini-2.5-flash
+
+query_runner:
+  batch_size: 5
+  parallel_workers: 3
