@@ -128,8 +128,8 @@ async def ask_openai(client: AsyncOpenAI, question: str, model: str) -> Dict[str
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": question}
             ],
-            max_tokens=512,
-            temperature=0.7
+            max_tokens=get_provider_config("openai").get("max_tokens", 512),
+            temperature=get_provider_config("openai").get("temperature", 0.7)
         )
         return response
     
@@ -162,7 +162,7 @@ async def ask_anthropic(client: AsyncAnthropic, question: str, model: str) -> Di
     async def _call():
         response = await client.messages.create(
             model=model,
-            max_tokens=512,
+            max_tokens=get_provider_config("anthropic").get("max_tokens", 512),
             messages=[
                 {
                     "role": "user",

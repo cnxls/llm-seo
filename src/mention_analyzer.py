@@ -36,20 +36,30 @@ def load_answers(run_dir=None):
     responses = []
     for filename in output_files:
         file_path = os.path.join(run_path, filename)
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            for provider, response_data in data['response'].items():
+        try:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+                for provider, response_data in data['response'].items():
 
-                if response_data is None:
-                    continue
-                    
-                answer = Answer(
-                    question_id=data['id'],
-                    question=data['question'],
-                    answer=response_data['text']
-                )
-                responses.append(answer)
-    
+                    if response_data is None:
+                        continue
+                        
+                    answer = Answer(
+                        question_id=data['id'],
+                        question=data['question'],
+                        answer=response_data['text']
+                    )
+                    responses.append(answer)
+        except FileNotFoundError:
+            print(f"File {file_path} not found.")
+            continue
+        except json.JSONDecodeError:
+            print(f"Error decoding JSON from file {file_path}.")
+            continue
+        except PermissionError:
+            print(f"Permission denied reading file: {file_path}")
+            continue
+
     responses.sort(key=lambda x: x.question_id)
     return responses
 
