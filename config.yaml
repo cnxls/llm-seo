@@ -5,7 +5,7 @@ project:
 llm:
   default_provider: openai  # one of: openai, anthropic, google
   temperature: 0.2
-  max_tokens: 800
+  max_tokens: 512
   timeout_seconds: 60
   providers:
     openai:

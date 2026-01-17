@@ -26,7 +26,13 @@ class QueryRunner:
                 queries = json.load(file)
             return queries
         except FileNotFoundError:
-            print("File not found.")
+            print(f"File data/entries/queries.json not found.")
+            return {'queries': []}
+        except json.JSONDecodeError:
+            print(f"Error decoding JSON from file data/entries/queries.json.")
+            return {'queries': []}
+        except PermissionError:
+            print(f"Permission denied reading file: data/entries/queries.json")
             return {'queries': []}
         
 
@@ -59,8 +65,18 @@ class QueryRunner:
                     json.dump(output.to_dict(), outfile, indent=4)
                 
                 print(f"Query {query_id} saved to {output_path}")
-            except Exception as e:
-                print(f"Failed to save query {query_id} to {output_path}: {e}")
+            
+            except FileNotFoundError:
+                print(f"File {output_path} not found.")
+                continue
+            
+            except json.JSONDecodeError:
+                print(f"Error decoding JSON from file {output_path}.")
+                continue
+            
+            except PermissionError:
+                print(f"Permission denied reading file: {output_path}")
+                continue
 
 if __name__ == "__main__":
     data = QueryRunner.load_queries()
