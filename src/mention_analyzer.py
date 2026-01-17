@@ -55,13 +55,18 @@ def load_answers(run_dir=None):
 
 
 def load_brands():
-     competitors = {}
-     with open(f'data/entries/brands.json', 'r') as file:
-        brands = json.load(file)
-        target = brands['target']['aliases']
-        for brand in brands['competitors']:
-            competitors[brand['name']] = brand['aliases']
-        return target, competitors
+    competitors = {}
+    try:
+        with open(f'data/entries/brands.json', 'r') as file:
+            brands = json.load(file)
+            target = brands['target']['aliases']
+            for brand in brands['competitors']:
+                competitors[brand['name']] = brand['aliases']
+            return target, competitors 
+    except FileNotFoundError:
+        print("Brands file not found.")
+        return [], {}
+
 
 
 

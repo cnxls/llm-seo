@@ -21,9 +21,14 @@ class QueryRunner:
     
     @staticmethod
     def load_queries():
-        with open('data/entries/queries.json', 'r') as file:
-            queries = json.load(file)
-        return queries
+        try:
+            with open('data/entries/queries.json', 'r') as file:
+                queries = json.load(file)
+            return queries
+        except FileNotFoundError:
+            print("File not found.")
+            return {'queries': []}
+        
 
     @staticmethod
     async def run_queries(data):
@@ -49,11 +54,13 @@ class QueryRunner:
             
             
             output_path = os.path.join(run_dir, f'output_{query_id}.json')
-            with open(output_path, 'w') as outfile:
-                json.dump(output.to_dict(), outfile, indent=4)
-            
-            print(f"Query {query_id} saved to {output_path}")
-
+            try:
+                with open(output_path, 'w') as outfile:
+                    json.dump(output.to_dict(), outfile, indent=4)
+                
+                print(f"Query {query_id} saved to {output_path}")
+            except Exception as e:
+                print(f"Failed to save query {query_id} to {output_path}: {e}")
 
 if __name__ == "__main__":
     data = QueryRunner.load_queries()
