@@ -95,7 +95,7 @@ class MentionsAnalyzer:
         
         target_matches.sort(key=lambda m: m.start())
         mentions.append({
-            'brand': 'Obsidian',
+            'brand': json.load(open('data/entries/brands.json', 'r'))['target']['name'],
             'is_target': True,
             'found': len(target_matches) > 0,
             'count': len(target_matches),
