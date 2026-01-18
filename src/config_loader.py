@@ -8,10 +8,13 @@ load_dotenv()
 
 CONFIG_PATH = Path(__file__).resolve().parent.parent / "config.yaml"
 
-def load_config():
-
-    with CONFIG_PATH.open("r", encoding="utf-8") as fh:
-        return yaml.safe_load(fh)
+def load_config(config_path = None):
+    config_path = config_path or CONFIG_PATH
+    try:
+        with config_path.open("r", encoding="utf-8") as fh:
+            return yaml.safe_load(fh)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Config not found at {config_path}")
 
 CONFIG = load_config()
 
