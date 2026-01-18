@@ -269,14 +269,17 @@ def ask_something(question: Optional[str] = None) -> Optional[Dict[str, Any]]:
             return ask_google(client, question, model)
     
     except ValueError as e:
+        logger.error(f'Value Error: {e}')
         print(f"\n{e}")
         return None
     
     except (OpenAIError, APIError, google_exceptions.GoogleAPIError) as e:
+        logger.error(f"API Error: {e}")
         print(f"\nAPI Error: {e}")
         return None
     
     except KeyboardInterrupt:
+        logger.error("Interrupted by user")
         print("\n\nInterrupted by user")
         return None
     
@@ -349,18 +352,18 @@ def pick_mode() -> Tuple[str, Optional[str]]:
     return "all", None
 
 if __name__ == "__main__":
-    print("LLM Client Test\n")
-    response = aio.run(ask_something("what is dota 2?"))
+    logger.info("LLM Client Test\n")
+    response = aio.run(ask_something(""))
 
 
     if response:
-        print("\n" + "-"*50)
-        print("RESPONSE:")
-        print("-"*50)
-        print(response["text"])
-        print("-"*50)
-        print(f"Model: {response['model']}")
-        print(f"Tokens: {response['tokens']['total']} "
+        logger.info("\n" + "-"*50)
+        logger.info("RESPONSE:")
+        logger.info("-"*50)
+        logger.info(response["text"])
+        logger.info("-"*50)
+        logger.info(f"Model: {response['model']}")
+        logger.info(f"Tokens: {response['tokens']['total']} "
               f"(in: {response['tokens']['input']}, out: {response['tokens']['output']})")
-        print("-"*50)
+        logger.info("-"*50)
 
