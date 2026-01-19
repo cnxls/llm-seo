@@ -1,9 +1,10 @@
+import logging
 import re
 import json
 import os
 from .query_runner import QueryRunner 
 
-
+logger = logging.getLogger(__name__)
 
 class Answer:
     def __init__(self, question_id, question, answer):
@@ -51,9 +52,11 @@ def load_answers(run_dir=None):
                     )
                     responses.append(answer)
         except FileNotFoundError:
+            logger.error(f"File {file_path} not found.")
             print(f"File {file_path} not found.")
             continue
         except json.JSONDecodeError:
+            logger.error(f"Error decoding JSON  {file_path}.")
             print(f"Error decoding JSON from file {file_path}.")
             continue
         except PermissionError:
