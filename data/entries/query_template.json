@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "category": "note-taking-apps",
+    "version": "1.0"
+  },
+  "placeholders": {
+    "category": "note-taking",
+    "use_cases": ["personal notes", "research", "work", "studying"]
+  },
+  "templates": {
+    "recommendation": [
+      "What are the best {category} apps?",
+      "What {category} tool should I use for {use_case}?",
+      "Best {category} app in 2024"
+    ],
+    "comparison": [
+      "{brand1} vs {brand2} which is better?",
+      "Compare {brand1} and {brand2} for {use_case}",
+      "{brand1} or {brand2} for {use_case}?"
+    ],
+    "problem_solving": [
+      "{competitor} is too expensive, what are alternatives?",
+      "I need a {category} app that works offline",
+      "Looking for a free alternative to {competitor}"
+    ],
+    "brand_specific": [
+      "Is {target} good for beginners?",
+      "What are the pros and cons of {target}?",
+      "Why should I use {target}?"
+    ],
+    "how_to": [
+      "How to build a second brain with {category} apps?",
+      "How to organize notes in {target}?"
+    ]
+  }
+}
