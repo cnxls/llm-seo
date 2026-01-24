@@ -11,6 +11,19 @@ TEMPLATES_PATH = DATA_DIR / "query_template.json"
 BRANDS_PATH = DATA_DIR / "brands.json"
 OUTPUT_PATH = DATA_DIR / "queries.json"
 
+class GeneratedQuery:
+    def __init__(self, query_id, category, query):
+        self.query_id = query_id
+        self.category = category
+        self.query = query
+
+    def to_dict(self):
+        return {
+            'id': self.query_id,
+            'category': self.category,
+            'query': self.query,
+        }
+
 
 def load_templates() -> Dict:
     try:
@@ -92,5 +105,43 @@ def generate_queries_from_template(template, placeholders):
             results.append(query)
     
     return results
+
+def generate_all_queries():
+    template_data = load_templates()
+    target, competitors = load_brands()
+    all_queries = []
+    id_x = 1
+    placeholders = template_data["placeholders"]
+    for category, templates in template_data["templates"].items():
+        for template in templates:
+            queries = generate_queries_from_template(template, placeholders)
+
+            for query in queries:
+                all_queries.append({
+                    'id': id_x,
+                    'category' : category,
+                    'query' : query
+                })
+                id_x+=1 
+    return all_queries
+
+
+def save_queries(queries, queries_path=OUTPUT_PATH):
+    """Save all generated queries to JSON file."""
+    target, competitors = load_brands()
+    
+    output = {
+        "brand": target[0],
+        "competitors": list(competitors.keys()),
+        "queries": queries  # Already a list of {"id": ..., "category": ..., "query": ...}
+    }
+    
+    try:
+        with open(queries_path, 'w', encoding='utf-8') as outfile:
+            json.dump(output, outfile, indent=2)
         
+        logger.info(f"Saved {len(queries)} queries to {queries_path}")
         
+    except PermissionError:
+        logger.error(f"Permission denied writing to: {queries_path}")
+        raise
