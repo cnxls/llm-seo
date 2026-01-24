@@ -131,3 +131,10 @@ def save_queries(queries, queries_path=OUTPUT_PATH):
     except PermissionError:
         logger.error(f"Permission denied writing to: {queries_path}")
         raise
+
+
+
+if __name__ == "__main__":
+    queries = generate_all_queries()
+    save_queries(queries)
+    print(f"Generated {len(queries)} queries")

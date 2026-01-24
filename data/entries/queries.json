@@ -4,133 +4,680 @@
     "Notion",
     "Roam Research",
     "Logseq",
+    "Tana",
+    "Heptabase",
     "Evernote",
     "Apple Notes",
+    "OneNote",
     "Bear",
     "Craft",
-    "Google Keep",
-    "OneNote"
+    "Joplin"
   ],
   "queries": [
     {
       "id": 1,
       "category": "recommendation",
-      "query": "What are the best note-taking apps for developers?",
-      "keywords": ["note-taking", "developers", "programming"]
+      "query": "What are the best note-taking apps?"
     },
     {
       "id": 2,
       "category": "recommendation",
-      "query": "What is the best app for personal knowledge management?",
-      "keywords": ["PKM", "knowledge management", "notes"]
+      "query": "What note-taking tool should I use for personal notes?"
     },
     {
       "id": 3,
       "category": "recommendation",
-      "query": "Best markdown note-taking app in 2024",
-      "keywords": ["markdown", "note-taking", "2024"]
+      "query": "What note-taking tool should I use for research?"
     },
     {
       "id": 4,
       "category": "recommendation",
-      "query": "What note-taking app should I use for research and academic work?",
-      "keywords": ["research", "academic", "notes", "students"]
+      "query": "What note-taking tool should I use for work?"
     },
     {
       "id": 5,
       "category": "recommendation",
-      "query": "Which note app has the best plugin ecosystem?",
-      "keywords": ["plugins", "extensions", "customization"]
+      "query": "What note-taking tool should I use for studying?"
     },
     {
       "id": 6,
-      "category": "comparison",
-      "query": "Obsidian vs Notion which one is better for personal notes?",
-      "keywords": ["Obsidian", "Notion", "comparison", "personal"]
+      "category": "recommendation",
+      "query": "Best note-taking app in 2024"
     },
     {
       "id": 7,
       "category": "comparison",
-      "query": "Compare Roam Research and Obsidian for Zettelkasten method",
-      "keywords": ["Roam", "Obsidian", "Zettelkasten", "linking"]
+      "query": "Obsidian vs Notion which is better?"
     },
     {
       "id": 8,
       "category": "comparison",
-      "query": "Logseq vs Obsidian pros and cons",
-      "keywords": ["Logseq", "Obsidian", "pros", "cons"]
+      "query": "Obsidian vs Roam Research which is better?"
     },
     {
       "id": 9,
       "category": "comparison",
-      "query": "What are the differences between Notion and Obsidian?",
-      "keywords": ["Notion", "Obsidian", "differences"]
+      "query": "Obsidian vs Logseq which is better?"
     },
     {
       "id": 10,
-      "category": "how-to",
-      "query": "How to build a second brain with note-taking apps?",
-      "keywords": ["second brain", "PKM", "productivity"]
+      "category": "comparison",
+      "query": "Obsidian vs Tana which is better?"
     },
     {
       "id": 11,
-      "category": "how-to",
-      "query": "How to organize notes using linked notes and backlinks?",
-      "keywords": ["backlinks", "linked notes", "organization"]
+      "category": "comparison",
+      "query": "Obsidian vs Heptabase which is better?"
     },
     {
       "id": 12,
-      "category": "how-to",
-      "query": "How to set up a Zettelkasten system digitally?",
-      "keywords": ["Zettelkasten", "digital", "setup"]
+      "category": "comparison",
+      "query": "Obsidian vs Evernote which is better?"
     },
     {
       "id": 13,
-      "category": "problem-solving",
-      "query": "My notes are scattered across multiple apps, how do I consolidate them?",
-      "keywords": ["scattered", "consolidate", "organize"]
+      "category": "comparison",
+      "query": "Obsidian vs Apple Notes which is better?"
     },
     {
       "id": 14,
-      "category": "problem-solving",
-      "query": "I want my notes stored locally not in the cloud, what are my options?",
-      "keywords": ["local storage", "privacy", "offline"]
+      "category": "comparison",
+      "query": "Obsidian vs OneNote which is better?"
     },
     {
       "id": 15,
-      "category": "problem-solving",
-      "query": "Evernote is getting too expensive, what are good alternatives?",
-      "keywords": ["Evernote", "alternatives", "price"]
+      "category": "comparison",
+      "query": "Obsidian vs Bear which is better?"
     },
     {
       "id": 16,
-      "category": "best-practices",
-      "query": "What are best practices for personal knowledge management?",
-      "keywords": ["best practices", "PKM", "productivity"]
+      "category": "comparison",
+      "query": "Obsidian vs Craft which is better?"
     },
     {
       "id": 17,
-      "category": "best-practices",
-      "query": "How should I structure my notes for long-term use?",
-      "keywords": ["structure", "long-term", "organization"]
+      "category": "comparison",
+      "query": "Obsidian vs Joplin which is better?"
     },
     {
       "id": 18,
-      "category": "brand-specific",
-      "query": "Is Obsidian good for beginners or is it too complicated?",
-      "keywords": ["Obsidian", "beginners", "learning curve"]
+      "category": "comparison",
+      "query": "Compare Obsidian and Notion for personal notes"
     },
     {
       "id": 19,
-      "category": "brand-specific",
-      "query": "What are the main advantages of using Obsidian?",
-      "keywords": ["Obsidian", "advantages", "benefits"]
+      "category": "comparison",
+      "query": "Compare Obsidian and Notion for research"
     },
     {
-  "id": 20,
-  "category": "comparison",
-  "query": "Which app is more customizable: Notion or Obsidian?",
-  "keywords": ["customization", "plugins", "extensions"]
+      "id": 20,
+      "category": "comparison",
+      "query": "Compare Obsidian and Notion for work"
+    },
+    {
+      "id": 21,
+      "category": "comparison",
+      "query": "Compare Obsidian and Notion for studying"
+    },
+    {
+      "id": 22,
+      "category": "comparison",
+      "query": "Compare Obsidian and Roam Research for personal notes"
+    },
+    {
+      "id": 23,
+      "category": "comparison",
+      "query": "Compare Obsidian and Roam Research for research"
+    },
+    {
+      "id": 24,
+      "category": "comparison",
+      "query": "Compare Obsidian and Roam Research for work"
+    },
+    {
+      "id": 25,
+      "category": "comparison",
+      "query": "Compare Obsidian and Roam Research for studying"
+    },
+    {
+      "id": 26,
+      "category": "comparison",
+      "query": "Compare Obsidian and Logseq for personal notes"
+    },
+    {
+      "id": 27,
+      "category": "comparison",
+      "query": "Compare Obsidian and Logseq for research"
+    },
+    {
+      "id": 28,
+      "category": "comparison",
+      "query": "Compare Obsidian and Logseq for work"
+    },
+    {
+      "id": 29,
+      "category": "comparison",
+      "query": "Compare Obsidian and Logseq for studying"
+    },
+    {
+      "id": 30,
+      "category": "comparison",
+      "query": "Compare Obsidian and Tana for personal notes"
+    },
+    {
+      "id": 31,
+      "category": "comparison",
+      "query": "Compare Obsidian and Tana for research"
+    },
+    {
+      "id": 32,
+      "category": "comparison",
+      "query": "Compare Obsidian and Tana for work"
+    },
+    {
+      "id": 33,
+      "category": "comparison",
+      "query": "Compare Obsidian and Tana for studying"
+    },
+    {
+      "id": 34,
+      "category": "comparison",
+      "query": "Compare Obsidian and Heptabase for personal notes"
+    },
+    {
+      "id": 35,
+      "category": "comparison",
+      "query": "Compare Obsidian and Heptabase for research"
+    },
+    {
+      "id": 36,
+      "category": "comparison",
+      "query": "Compare Obsidian and Heptabase for work"
+    },
+    {
+      "id": 37,
+      "category": "comparison",
+      "query": "Compare Obsidian and Heptabase for studying"
+    },
+    {
+      "id": 38,
+      "category": "comparison",
+      "query": "Compare Obsidian and Evernote for personal notes"
+    },
+    {
+      "id": 39,
+      "category": "comparison",
+      "query": "Compare Obsidian and Evernote for research"
+    },
+    {
+      "id": 40,
+      "category": "comparison",
+      "query": "Compare Obsidian and Evernote for work"
+    },
+    {
+      "id": 41,
+      "category": "comparison",
+      "query": "Compare Obsidian and Evernote for studying"
+    },
+    {
+      "id": 42,
+      "category": "comparison",
+      "query": "Compare Obsidian and Apple Notes for personal notes"
+    },
+    {
+      "id": 43,
+      "category": "comparison",
+      "query": "Compare Obsidian and Apple Notes for research"
+    },
+    {
+      "id": 44,
+      "category": "comparison",
+      "query": "Compare Obsidian and Apple Notes for work"
+    },
+    {
+      "id": 45,
+      "category": "comparison",
+      "query": "Compare Obsidian and Apple Notes for studying"
+    },
+    {
+      "id": 46,
+      "category": "comparison",
+      "query": "Compare Obsidian and OneNote for personal notes"
+    },
+    {
+      "id": 47,
+      "category": "comparison",
+      "query": "Compare Obsidian and OneNote for research"
+    },
+    {
+      "id": 48,
+      "category": "comparison",
+      "query": "Compare Obsidian and OneNote for work"
+    },
+    {
+      "id": 49,
+      "category": "comparison",
+      "query": "Compare Obsidian and OneNote for studying"
+    },
+    {
+      "id": 50,
+      "category": "comparison",
+      "query": "Compare Obsidian and Bear for personal notes"
+    },
+    {
+      "id": 51,
+      "category": "comparison",
+      "query": "Compare Obsidian and Bear for research"
+    },
+    {
+      "id": 52,
+      "category": "comparison",
+      "query": "Compare Obsidian and Bear for work"
+    },
+    {
+      "id": 53,
+      "category": "comparison",
+      "query": "Compare Obsidian and Bear for studying"
+    },
+    {
+      "id": 54,
+      "category": "comparison",
+      "query": "Compare Obsidian and Craft for personal notes"
+    },
+    {
+      "id": 55,
+      "category": "comparison",
+      "query": "Compare Obsidian and Craft for research"
+    },
+    {
+      "id": 56,
+      "category": "comparison",
+      "query": "Compare Obsidian and Craft for work"
+    },
+    {
+      "id": 57,
+      "category": "comparison",
+      "query": "Compare Obsidian and Craft for studying"
+    },
+    {
+      "id": 58,
+      "category": "comparison",
+      "query": "Compare Obsidian and Joplin for personal notes"
+    },
+    {
+      "id": 59,
+      "category": "comparison",
+      "query": "Compare Obsidian and Joplin for research"
+    },
+    {
+      "id": 60,
+      "category": "comparison",
+      "query": "Compare Obsidian and Joplin for work"
+    },
+    {
+      "id": 61,
+      "category": "comparison",
+      "query": "Compare Obsidian and Joplin for studying"
+    },
+    {
+      "id": 62,
+      "category": "comparison",
+      "query": "Obsidian or Notion for personal notes?"
+    },
+    {
+      "id": 63,
+      "category": "comparison",
+      "query": "Obsidian or Notion for research?"
+    },
+    {
+      "id": 64,
+      "category": "comparison",
+      "query": "Obsidian or Notion for work?"
+    },
+    {
+      "id": 65,
+      "category": "comparison",
+      "query": "Obsidian or Notion for studying?"
+    },
+    {
+      "id": 66,
+      "category": "comparison",
+      "query": "Obsidian or Roam Research for personal notes?"
+    },
+    {
+      "id": 67,
+      "category": "comparison",
+      "query": "Obsidian or Roam Research for research?"
+    },
+    {
+      "id": 68,
+      "category": "comparison",
+      "query": "Obsidian or Roam Research for work?"
+    },
+    {
+      "id": 69,
+      "category": "comparison",
+      "query": "Obsidian or Roam Research for studying?"
+    },
+    {
+      "id": 70,
+      "category": "comparison",
+      "query": "Obsidian or Logseq for personal notes?"
+    },
+    {
+      "id": 71,
+      "category": "comparison",
+      "query": "Obsidian or Logseq for research?"
+    },
+    {
+      "id": 72,
+      "category": "comparison",
+      "query": "Obsidian or Logseq for work?"
+    },
+    {
+      "id": 73,
+      "category": "comparison",
+      "query": "Obsidian or Logseq for studying?"
+    },
+    {
+      "id": 74,
+      "category": "comparison",
+      "query": "Obsidian or Tana for personal notes?"
+    },
+    {
+      "id": 75,
+      "category": "comparison",
+      "query": "Obsidian or Tana for research?"
+    },
+    {
+      "id": 76,
+      "category": "comparison",
+      "query": "Obsidian or Tana for work?"
+    },
+    {
+      "id": 77,
+      "category": "comparison",
+      "query": "Obsidian or Tana for studying?"
+    },
+    {
+      "id": 78,
+      "category": "comparison",
+      "query": "Obsidian or Heptabase for personal notes?"
+    },
+    {
+      "id": 79,
+      "category": "comparison",
+      "query": "Obsidian or Heptabase for research?"
+    },
+    {
+      "id": 80,
+      "category": "comparison",
+      "query": "Obsidian or Heptabase for work?"
+    },
+    {
+      "id": 81,
+      "category": "comparison",
+      "query": "Obsidian or Heptabase for studying?"
+    },
+    {
+      "id": 82,
+      "category": "comparison",
+      "query": "Obsidian or Evernote for personal notes?"
+    },
+    {
+      "id": 83,
+      "category": "comparison",
+      "query": "Obsidian or Evernote for research?"
+    },
+    {
+      "id": 84,
+      "category": "comparison",
+      "query": "Obsidian or Evernote for work?"
+    },
+    {
+      "id": 85,
+      "category": "comparison",
+      "query": "Obsidian or Evernote for studying?"
+    },
+    {
+      "id": 86,
+      "category": "comparison",
+      "query": "Obsidian or Apple Notes for personal notes?"
+    },
+    {
+      "id": 87,
+      "category": "comparison",
+      "query": "Obsidian or Apple Notes for research?"
+    },
+    {
+      "id": 88,
+      "category": "comparison",
+      "query": "Obsidian or Apple Notes for work?"
+    },
+    {
+      "id": 89,
+      "category": "comparison",
+      "query": "Obsidian or Apple Notes for studying?"
+    },
+    {
+      "id": 90,
+      "category": "comparison",
+      "query": "Obsidian or OneNote for personal notes?"
+    },
+    {
+      "id": 91,
+      "category": "comparison",
+      "query": "Obsidian or OneNote for research?"
+    },
+    {
+      "id": 92,
+      "category": "comparison",
+      "query": "Obsidian or OneNote for work?"
+    },
+    {
+      "id": 93,
+      "category": "comparison",
+      "query": "Obsidian or OneNote for studying?"
+    },
+    {
+      "id": 94,
+      "category": "comparison",
+      "query": "Obsidian or Bear for personal notes?"
+    },
+    {
+      "id": 95,
+      "category": "comparison",
+      "query": "Obsidian or Bear for research?"
+    },
+    {
+      "id": 96,
+      "category": "comparison",
+      "query": "Obsidian or Bear for work?"
+    },
+    {
+      "id": 97,
+      "category": "comparison",
+      "query": "Obsidian or Bear for studying?"
+    },
+    {
+      "id": 98,
+      "category": "comparison",
+      "query": "Obsidian or Craft for personal notes?"
+    },
+    {
+      "id": 99,
+      "category": "comparison",
+      "query": "Obsidian or Craft for research?"
+    },
+    {
+      "id": 100,
+      "category": "comparison",
+      "query": "Obsidian or Craft for work?"
+    },
+    {
+      "id": 101,
+      "category": "comparison",
+      "query": "Obsidian or Craft for studying?"
+    },
+    {
+      "id": 102,
+      "category": "comparison",
+      "query": "Obsidian or Joplin for personal notes?"
+    },
+    {
+      "id": 103,
+      "category": "comparison",
+      "query": "Obsidian or Joplin for research?"
+    },
+    {
+      "id": 104,
+      "category": "comparison",
+      "query": "Obsidian or Joplin for work?"
+    },
+    {
+      "id": 105,
+      "category": "comparison",
+      "query": "Obsidian or Joplin for studying?"
+    },
+    {
+      "id": 106,
+      "category": "problem_solving",
+      "query": "Notion is too expensive, what are alternatives?"
+    },
+    {
+      "id": 107,
+      "category": "problem_solving",
+      "query": "Roam Research is too expensive, what are alternatives?"
+    },
+    {
+      "id": 108,
+      "category": "problem_solving",
+      "query": "Logseq is too expensive, what are alternatives?"
+    },
+    {
+      "id": 109,
+      "category": "problem_solving",
+      "query": "Tana is too expensive, what are alternatives?"
+    },
+    {
+      "id": 110,
+      "category": "problem_solving",
+      "query": "Heptabase is too expensive, what are alternatives?"
+    },
+    {
+      "id": 111,
+      "category": "problem_solving",
+      "query": "Evernote is too expensive, what are alternatives?"
+    },
+    {
+      "id": 112,
+      "category": "problem_solving",
+      "query": "Apple Notes is too expensive, what are alternatives?"
+    },
+    {
+      "id": 113,
+      "category": "problem_solving",
+      "query": "OneNote is too expensive, what are alternatives?"
+    },
+    {
+      "id": 114,
+      "category": "problem_solving",
+      "query": "Bear is too expensive, what are alternatives?"
+    },
+    {
+      "id": 115,
+      "category": "problem_solving",
+      "query": "Craft is too expensive, what are alternatives?"
+    },
+    {
+      "id": 116,
+      "category": "problem_solving",
+      "query": "Joplin is too expensive, what are alternatives?"
+    },
+    {
+      "id": 117,
+      "category": "problem_solving",
+      "query": "I need a note-taking app that works offline"
+    },
+    {
+      "id": 118,
+      "category": "problem_solving",
+      "query": "Looking for a free alternative to Notion"
+    },
+    {
+      "id": 119,
+      "category": "problem_solving",
+      "query": "Looking for a free alternative to Roam Research"
+    },
+    {
+      "id": 120,
+      "category": "problem_solving",
+      "query": "Looking for a free alternative to Logseq"
+    },
+    {
+      "id": 121,
+      "category": "problem_solving",
+      "query": "Looking for a free alternative to Tana"
+    },
+    {
+      "id": 122,
+      "category": "problem_solving",
+      "query": "Looking for a free alternative to Heptabase"
+    },
+    {
+      "id": 123,
+      "category": "problem_solving",
+      "query": "Looking for a free alternative to Evernote"
+    },
+    {
+      "id": 124,
+      "category": "problem_solving",
+      "query": "Looking for a free alternative to Apple Notes"
+    },
+    {
+      "id": 125,
+      "category": "problem_solving",
+      "query": "Looking for a free alternative to OneNote"
+    },
+    {
+      "id": 126,
+      "category": "problem_solving",
+      "query": "Looking for a free alternative to Bear"
+    },
+    {
+      "id": 127,
+      "category": "problem_solving",
+      "query": "Looking for a free alternative to Craft"
+    },
+    {
+      "id": 128,
+      "category": "problem_solving",
+      "query": "Looking for a free alternative to Joplin"
+    },
+    {
+      "id": 129,
+      "category": "brand_specific",
+      "query": "Is Obsidian good for beginners?"
+    },
+    {
+      "id": 130,
+      "category": "brand_specific",
+      "query": "What are the pros and cons of Obsidian?"
+    },
+    {
+      "id": 131,
+      "category": "brand_specific",
+      "query": "Why should I use Obsidian?"
+    },
+    {
+      "id": 132,
+      "category": "how_to",
+      "query": "How to build a second brain with note-taking apps?"
+    },
+    {
+      "id": 133,
+      "category": "how_to",
+      "query": "How to organize notes in Obsidian?"
     }
   ]
 }
