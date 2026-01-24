@@ -11,19 +11,6 @@ TEMPLATES_PATH = DATA_DIR / "query_template.json"
 BRANDS_PATH = DATA_DIR / "brands.json"
 OUTPUT_PATH = DATA_DIR / "queries.json"
 
-class GeneratedQuery:
-    def __init__(self, query_id, category, query):
-        self.query_id = query_id
-        self.category = category
-        self.query = query
-
-    def to_dict(self):
-        return {
-            'id': self.query_id,
-            'category': self.category,
-            'query': self.query,
-        }
-
 
 def load_templates() -> Dict:
     try:
@@ -108,7 +95,6 @@ def generate_queries_from_template(template, placeholders):
 
 def generate_all_queries():
     template_data = load_templates()
-    target, competitors = load_brands()
     all_queries = []
     id_x = 1
     placeholders = template_data["placeholders"]
