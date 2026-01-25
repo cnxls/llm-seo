@@ -68,15 +68,34 @@ class QueryRunner:
 
 
     @staticmethod
-    async def run_queries(data):
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    async def run_queries(data, start=None, limit=None, ids=None, resume_dir=None):
+
         output_dir = f'data/results'
-        run_dir = os.path.join(output_dir, f'run_{timestamp}')
-        os.makedirs(run_dir, exist_ok=True)
+
+        if resume_dir:
+            run_dir = resume_dir
+
+            if not os.path.isdir(run_dir):
+                print(f"Resume dir not found: {run_dir}")
+                return 
+        
+        else:
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            run_dir = os.path.join(output_dir, f'run_{timestamp}')
+            os.makedirs(run_dir, exist_ok=True)
+
+
+        queries = data['queries']
+        queries = QueryRunner.filter_queries(queries, start, limit, ids)
 
         mode, provider = pick_mode()
 
-        for query in data['queries']:
+        if resume_dir:
+            completed = QueryRunner.get_completed_ids(run_dir)
+            queries = [q for q in queries if q['id'] not in completed]
+            print(f"Resuming: {len(completed)} done, {len(queries)} remaining")
+
+        for query in queries:
             query_id = query['id']
             question = query['query']
             
@@ -125,4 +144,4 @@ if __name__ == "__main__":
         args.ids = {int(x) for x in args.ids.split(',')}
     print(f"start={args.start}, limit={args.limit}, ids={args.ids}, resume={args.resume}")
     data = QueryRunner.load_queries()
-    aio.run(QueryRunner.run_queries(data))
+    aio.run(QueryRunner.run_queries(data, args.start, args.limit, args.ids, args.resume))
