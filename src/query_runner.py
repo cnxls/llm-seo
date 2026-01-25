@@ -3,6 +3,8 @@ from .llm_clients import pick_mode, ask_provider, ask_all_providers
 import os
 from datetime import datetime
 import asyncio as aio
+import argparse
+
 
 class QueryOutput:
     def __init__(self, query_id, question, response):
@@ -45,6 +47,24 @@ class QueryRunner:
                 completed.add(query_id)
         
         return completed
+    
+    @staticmethod
+    def filter_queries(queries, start=None, limit=None, ids=None):
+
+        if ids is not None:
+            return [q for q in queries if q['id'] in ids]
+        
+        result = queries
+        
+        # Filter by start ID
+        if start is not None:
+            result = [q for q in result if q['id'] >= start]
+        
+        # Limit
+        if limit is not None:
+            result = result[:limit]
+        
+        return result
 
 
     @staticmethod
@@ -89,6 +109,20 @@ class QueryRunner:
                 print(f"Permission denied reading file: {output_path}")
                 continue
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run queries against LLMs")
+    
+    parser.add_argument("--start", type=int, help="Start from this query ID")
+    parser.add_argument("--limit", type=int, help="Maximum number of queries to run")
+    parser.add_argument("--ids", type=str, help="Comma-separated query IDs: 1,5,10")
+    parser.add_argument("--resume", type=str, help="Path to existing run directory to resume")
+    
+    return parser.parse_args()
+
 if __name__ == "__main__":
+    args = parse_args()
+    if args.ids:
+        args.ids = {int(x) for x in args.ids.split(',')}
+    print(f"start={args.start}, limit={args.limit}, ids={args.ids}, resume={args.resume}")
     data = QueryRunner.load_queries()
     aio.run(QueryRunner.run_queries(data))
