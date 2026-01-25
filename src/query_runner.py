@@ -35,6 +35,17 @@ class QueryRunner:
             print(f"Permission denied reading file: data/entries/queries.json")
             return {'queries': []}
         
+    @staticmethod
+    def get_completed_ids(run_dir):
+        completed = set()
+        
+        for filename in os.listdir(run_dir):
+            if filename.startswith("output_") and filename.endswith(".json"):
+                query_id = int(filename[7:-5])
+                completed.add(query_id)
+        
+        return completed
+
 
     @staticmethod
     async def run_queries(data):
