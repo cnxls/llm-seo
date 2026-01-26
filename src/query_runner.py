@@ -95,10 +95,12 @@ class QueryRunner:
             queries = [q for q in queries if q['id'] not in completed]
             print(f"Resuming: {len(completed)} done, {len(queries)} remaining")
 
-        for query in queries:
+        total = len(queries)
+
+        for i, query in enumerate(queries, 1):
+            print(f"Processing query {i}/{total} (ID: {query['id']})")
             query_id = query['id']
             question = query['query']
-            
             
             if mode == "all":
                 responses = await ask_all_providers(question)
