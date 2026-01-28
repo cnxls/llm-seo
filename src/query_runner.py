@@ -130,6 +130,32 @@ class QueryRunner:
                 print(f"Permission denied reading file: {output_path}")
                 continue
 
+def generate_summary(run_dir):
+    results = []
+
+
+    for filename in os.listdir(run_dir):
+        if filename.startswith("output_") and filename.endswith(".json"):
+            with open(os.path.join(run_dir,filename),'r') as file:
+                data = json.load(file)
+                results.append(data)
+    
+    rundirname = os.getcwd(run_dir)
+    summary = {
+        "run_info": {
+            "timestamp": rundirname[4:],
+            "total_queries": len(results),
+        },
+        "results": results
+    }
+
+    output_path = os.path.basename(run_dir)
+    with open(output_path, 'w') as outfile:
+        json.dump(summary , outfile, indent=4)
+    
+    print(f"Summary saved to {output_path}")
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Run queries against LLMs")
     
