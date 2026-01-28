@@ -130,6 +130,8 @@ class QueryRunner:
                 print(f"Permission denied reading file: {output_path}")
                 continue
 
+        generate_summary(run_dir)
+
 def generate_summary(run_dir):
     results = []
 
@@ -140,7 +142,7 @@ def generate_summary(run_dir):
                 data = json.load(file)
                 results.append(data)
     
-    rundirname = os.getcwd(run_dir)
+    rundirname = os.path.basename(run_dir)
     summary = {
         "run_info": {
             "timestamp": rundirname[4:],
@@ -149,7 +151,7 @@ def generate_summary(run_dir):
         "results": results
     }
 
-    output_path = os.path.basename(run_dir)
+    output_path = os.path.join(run_dir, f'summary.json')
     with open(output_path, 'w') as outfile:
         json.dump(summary , outfile, indent=4)
     
