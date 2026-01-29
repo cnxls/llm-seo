@@ -16,14 +16,31 @@ async def enhance_queries():
 
     for i in range(0,len(queries),BATCH_SIZE):
         batch = queries[i:i+BATCH_SIZE]
-        prompt = "Rephrase these to sound human. Keep brands. Return JSON array.\n\n"
+        prompt = """Rephrase these queries to sound like natural human questions. Keep all brand names.
+
+Example:
+Input: 1. Obsidian vs Notion for research
+Output: [{"id": 1, "natural": "I'm trying to decide between Obsidian and Notion for my research - which one is better?"}]
+
+Return ONLY a JSON array, no other text.
+
+Queries:
+"""
+
         for q in batch:
             prompt = prompt + f"{q['id']}. {q['query']}\n"
         client = build_client()
         answer = await ask_openai(client, prompt, "gpt-4o-mini")
-        enhanced.append(json.loads(answer))
+        results = json.loads(answer)
+        for r in results:
+            original = next(q for q in batch if q['id'] == r['id'])
+            enhanced.append({
+                'id': original['id'],
+                'category': original['category'],
+                'query': r['natural']
+            })
 
-        save_queries(enhanced, OUTPUT_PATH)
+    save_queries(enhanced, OUTPUT_PATH)
 
 if __name__ == "__main__":
     aio.run(enhance_queries())
