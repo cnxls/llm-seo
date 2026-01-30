@@ -4,6 +4,8 @@ import json
 import os
 from .query_runner import QueryRunner 
 
+OUTPUT_DIR = 'data/results'
+
 logger = logging.getLogger(__name__)
 
 class Answer:
@@ -175,3 +177,48 @@ class MentionsAnalyzer:
             all_results.extend(result)
         
         return all_results
+
+
+
+
+
+def save_analysis(results, run_dir=None):
+    base_path = 'data/results'
+    
+    if run_dir is None:
+        all_dirs = os.listdir(base_path)
+        all_dirs = [d for d in all_dirs if os.path.isdir(os.path.join(base_path, d))]
+        all_dirs.sort(key=lambda d: os.path.getmtime(os.path.join(base_path, d)), reverse=True)
+        run_dir = all_dirs[0]
+    
+    output_path = os.path.join(base_path, run_dir, 'analysis.json')
+    with open(output_path, 'w') as f:
+        json.dump(results, f, indent=4)
+    
+    print(f"Analysis saved to {output_path}")
+
+def print_summary(results): 
+    brands = {}
+    for r in results:
+        brand = r['brand']
+        if brand not in  brands:
+            brands[brand] =  {'count': 0, 'score_sum': 0, 'found': 0, 'is_target': r['is_target']}
+            brands[brand]['count'] += r['count']
+            brands[brand]['score_sum'] += r['score']
+            if r['found']: 
+                brands[brand]['found'] = 1
+
+    print("\n Brand Mentions Summary \n")
+    for brand, stats in sorted(brands.items(), key=lambda x: x[1]['count'], reverse=True):
+        avg_score = stats['score_sum'] / len(results) * len(brands)
+        marker = " (TARGET)" if stats['is_target'] else ""
+        print(f"{brand}{marker}: {stats['count']} mentions, found in {stats['found']} answers, avg score: {avg_score:.2f}")
+
+
+if __name__ == "__main__":
+    responses = load_answers()
+    analyzer = MentionsAnalyzer()
+    results = analyzer.mention_analyzer(responses)
+    
+    save_analysis(results)
+    print_summary(results)
