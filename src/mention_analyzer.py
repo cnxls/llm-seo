@@ -203,10 +203,10 @@ def print_summary(results):
         brand = r['brand']
         if brand not in  brands:
             brands[brand] =  {'count': 0, 'score_sum': 0, 'found': 0, 'is_target': r['is_target']}
-            brands[brand]['count'] += r['count']
-            brands[brand]['score_sum'] += r['score']
-            if r['found']: 
-                brands[brand]['found'] = 1
+        brands[brand]['count'] += r['count']
+        brands[brand]['score_sum'] += r['score']
+        if r['found']: 
+            brands[brand]['found'] += 1
 
     print("\n Brand Mentions Summary \n")
     for brand, stats in sorted(brands.items(), key=lambda x: x[1]['count'], reverse=True):
