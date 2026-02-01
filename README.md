@@ -77,10 +77,19 @@ Edit `data/entries/brands.json`:
 
 ## Usage
 
+All commands can be run via the CLI:
+
+```bash
+poetry run python -m src.cli generate   # Generate queries from templates
+poetry run python -m src.cli enhance    # Enhance queries with LLM
+poetry run python -m src.cli run        # Run queries against LLMs
+poetry run python -m src.cli analyze    # Analyze brand mentions
+```
+
 ### Step 1: Generate queries
 
 ```bash
-python -m src.queries_generator
+poetry run python -m src.cli generate
 ```
 
 Creates `data/entries/queries.json` from templates in `data/entries/query_template.json`.
@@ -88,7 +97,7 @@ Creates `data/entries/queries.json` from templates in `data/entries/query_templa
 ### Step 2: Enhance queries (optional)
 
 ```bash
-python -m src.query_enhancer
+poetry run python -m src.cli enhance
 ```
 
 Uses GPT-4o-mini to make queries sound natural. Creates `data/entries/queries_enhanced.json`.
@@ -96,14 +105,26 @@ Uses GPT-4o-mini to make queries sound natural. Creates `data/entries/queries_en
 ### Step 3: Run queries
 
 ```bash
-python -m src.query_runner              # run all
-python -m src.query_runner --limit 5    # first 5 only
-python -m src.query_runner --ids 1,5,10 # specific IDs
-python -m src.query_runner --start 50   # start from ID 50
-python -m src.query_runner --resume data/results/run_2024-01-28_14-30-00
+poetry run python -m src.cli run
 ```
 
 Results saved to `data/results/run_<timestamp>/`.
+
+For more options (limit, resume, specific IDs), run the module directly:
+
+```bash
+poetry run python -m src.query_runner --limit 5    # first 5 only
+poetry run python -m src.query_runner --ids 1,5,10 # specific IDs
+poetry run python -m src.query_runner --resume data/results/run_2024-01-28_14-30-00
+```
+
+### Step 4: Analyze mentions
+
+```bash
+poetry run python -m src.cli analyze
+```
+
+Analyzes the most recent run, saves `analysis.json`, and prints a summary of brand mentions.
 
 ## Running tests
 
