@@ -75,19 +75,20 @@ def load_brands():
         with open(f'data/entries/brands.json', 'r') as file:
             brands = json.load(file)
             target = brands['target']['aliases']
+            name = brands['target']['name']
             for brand in brands['competitors']:
                 competitors[brand['name']] = brand['aliases']
-            return target, competitors 
+            return name, target, competitors  
     except FileNotFoundError:
         print("Brands file not found.")
-        return [], {}
+        return "", [], {}
 
 
 
 
 class MentionsAnalyzer:
     @staticmethod
-    def detect_mentions(text: str, target: list, competitors: dict):
+    def detect_mentions(text: str, name:str ,target: list, competitors: dict):
         text_lower = text.lower()
         text_length = len(text)
         mentions = []
@@ -98,9 +99,10 @@ class MentionsAnalyzer:
             matches = list(re.finditer(pattern, text_lower))
             target_matches.extend(matches)
         
+
         target_matches.sort(key=lambda m: m.start())
         mentions.append({
-            'brand': json.load(open('data/entries/brands.json', 'r'))['target']['name'],
+            'brand': name ,
             'is_target': True,
             'found': len(target_matches) > 0,
             'count': len(target_matches),
@@ -142,11 +144,11 @@ class MentionsAnalyzer:
             return 0.3
     
     def mention_analyzer(self, responses):
-        target, competitors = load_brands()
+        name, target, competitors = load_brands()
         analysis_results = []
 
         for answer in responses:     
-            mentions = MentionsAnalyzer.detect_mentions(answer.answer, target, competitors)  
+            mentions = MentionsAnalyzer.detect_mentions(answer.answer, name, target, competitors)  
             max_brand = max(mentions, key=lambda x: x['count'])['brand']
               
             for mention in mentions:
