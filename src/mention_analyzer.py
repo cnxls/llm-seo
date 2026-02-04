@@ -199,13 +199,19 @@ def save_analysis(results, run_dir=None):
     
     print(f"Analysis saved to {output_path}")
 
+
 def print_summary(results): 
     brands = {}
     for r in results:
         brand = r['brand']
 
         if brand not in  brands:
-            brands[brand] =  {'count': 0, 'score_sum': 0, 'found': 0, 'wins': 0, 'is_target': r['is_target']}
+            brands[brand] =  {'count': 0, 
+                              'score_sum': 0, 
+                              'found': 0, 
+                              'wins': 0, 
+                              'is_target': r['is_target']}
+                              
         brands[brand]['count'] += r['count']
         brands[brand]['score_sum'] += r['score']
 
@@ -222,6 +228,29 @@ def print_summary(results):
         marker = " (TARGET)" if stats['is_target'] else ""
         print(f"{brand}{marker}: {stats['count']} mentions, found in {stats['found']} answers, avg score: {avg_score:.2f}, won {stats['wins']} queries")
 
+def print_query_results(results):
+    seen = {}
+    for r in results:
+        qid = r['question_id']
+        if qid not in seen:
+            seen[qid] = {'winner': r['most_mentioned'], 'target': None}
+        if r['is_target']:
+            seen[qid]['target'] = r['brand']
+
+    wins = [qid for qid, q in seen.items() if q['target'] == q['winner']]
+    losses = [(qid, q['winner']) for qid, q in seen.items() if q['target'] != q['winner']]
+    total = len(seen)
+
+    print(f"\n Query Results \n")
+    print(f"TARGET won: {len(wins)}/{total} ({len(wins)/total*100:.1f}%)")
+    print(f"TARGET lost: {len(losses)}/{total} ({len(losses)/total*100:.1f}%)")
+
+    if losses:
+        print(f"\nQueries where TARGET lost (first 5):")
+        for qid, winner in losses[:5]:
+            print(f"  - Query {qid}: won by {winner}")
+
+
 
 if __name__ == "__main__":
     responses = load_answers()
@@ -230,3 +259,4 @@ if __name__ == "__main__":
     
     save_analysis(results)
     print_summary(results)
+    print_query_results(results)
