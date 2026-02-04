@@ -203,18 +203,24 @@ def print_summary(results):
     brands = {}
     for r in results:
         brand = r['brand']
+
         if brand not in  brands:
-            brands[brand] =  {'count': 0, 'score_sum': 0, 'found': 0, 'is_target': r['is_target']}
+            brands[brand] =  {'count': 0, 'score_sum': 0, 'found': 0, 'wins': 0, 'is_target': r['is_target']}
         brands[brand]['count'] += r['count']
         brands[brand]['score_sum'] += r['score']
+
         if r['found']: 
             brands[brand]['found'] += 1
+
+        if r['most_mentioned'] == brand:
+                brands[brand]['wins'] +=1 
+        
 
     print("\n Brand Mentions Summary \n")
     for brand, stats in sorted(brands.items(), key=lambda x: x[1]['count'], reverse=True):
         avg_score = stats['score_sum'] / len(results) * len(brands)
         marker = " (TARGET)" if stats['is_target'] else ""
-        print(f"{brand}{marker}: {stats['count']} mentions, found in {stats['found']} answers, avg score: {avg_score:.2f}")
+        print(f"{brand}{marker}: {stats['count']} mentions, found in {stats['found']} answers, avg score: {avg_score:.2f}, won {stats['wins']} queries")
 
 
 if __name__ == "__main__":
