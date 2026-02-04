@@ -9,13 +9,15 @@ OUTPUT_DIR = 'data/results'
 logger = logging.getLogger(__name__)
 
 class Answer:
-    def __init__(self, question_id, question, answer):
+    def __init__(self, category, question_id, question, answer):
+        self.category = category
         self.question_id = question_id
         self.question = question
         self.answer = answer
 
     def to_dict(self):
         return {
+            'category': self.category,
             'id': self.question_id,
             'question': self.question,
             'answer': self.answer
@@ -48,6 +50,7 @@ def load_answers(run_dir=None):
                         continue
                         
                     answer = Answer(
+                        category=data.get('category', 'unknown'),
                         question_id=data['id'],
                         question=data['question'],
                         answer=response_data['text']
@@ -154,6 +157,7 @@ class MentionsAnalyzer:
             for mention in mentions:
                 analysis_results.append({
                 'question_id': answer.question_id,
+                'category': answer.category,
                 'brand' : mention['brand'],
                 'is_target': mention['is_target'],
                 'found': mention['found'],
