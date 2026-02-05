@@ -254,6 +254,17 @@ def print_query_results(results):
         for qid, winner in losses[:5]:
             print(f"  - Query {qid}: won by {winner}")
 
+    category_losses = {}
+    for qid, winner in losses:
+        categ = next(r['category'] for r in results if r['question_id'] == qid)
+        if categ not in category_losses:
+            category_losses[categ] = 0
+        category_losses[categ] += 1
+    print("\nWorst categories for Target:")
+    for categ,count in sorted(category_losses.items(),key=lambda x:x[1],reverse=True)[:3]:
+        print(f" - {categ}: lost {count} queries") 
+
+
 
 
 if __name__ == "__main__":
