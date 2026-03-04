@@ -23,8 +23,8 @@ def main():
 
     elif args.command == "run":
         from .query_runner import QueryRunner
-        runner = QueryRunner()
-        aio.run(runner.run_queries())
+        data = QueryRunner.load_queries()
+        aio.run(QueryRunner.run_queries(data))
         
     elif args.command == "analyze":
         from .mention_analyzer import print_query_results,load_answers, MentionsAnalyzer, save_analysis, print_summary

@@ -15,7 +15,7 @@ class TestBrandDetection:
         target = ["Obsidian"]
         competitors = {"Notion": ["Notion"]}
 
-        mentions = MentionsAnalyzer.detect_mentions(text, target, competitors)
+        mentions = MentionsAnalyzer.detect_mentions(text, "Obsidian", target, competitors)
 
         assert len(mentions) > 0, "Should find at least one mention"
         target_mention = next((m for m in mentions if m['brand'] == 'Obsidian'), None)
@@ -28,7 +28,7 @@ class TestBrandDetection:
         target = ["Obsidian"]
         competitors = {}
 
-        mentions = MentionsAnalyzer.detect_mentions(text, target, competitors)
+        mentions = MentionsAnalyzer.detect_mentions(text, "Obsidian", target, competitors)
 
         target_mention = next((m for m in mentions if m['brand'] == 'Obsidian'), None)
         assert target_mention['count'] == 2, "Should find both lowercase and uppercase"
@@ -39,7 +39,7 @@ class TestBrandDetection:
         target = ["Obsidian", "Obsidian.md"]  # "Obsidian.md" 
         competitors = {}
 
-        mentions = MentionsAnalyzer.detect_mentions(text, target, competitors)
+        mentions = MentionsAnalyzer.detect_mentions(text, "Obsidian", target, competitors)
 
         target_mention = next((m for m in mentions if m['brand'] == 'Obsidian'), None)
         assert target_mention is not None, "Should find brand by alias"
@@ -49,7 +49,7 @@ class TestBrandDetection:
         target = ["Obsidian"]
         competitors = {}
 
-        mentions = MentionsAnalyzer.detect_mentions(text, target, competitors)
+        mentions = MentionsAnalyzer.detect_mentions(text, "Obsidian", target, competitors)
 
         target_mention = next((m for m in mentions if m['brand'] == 'Obsidian'), None)
         assert target_mention['count'] == 3, "Should count all 3 mentions"
