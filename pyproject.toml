@@ -3,7 +3,7 @@ name = "llm-seo"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "cnxls",email = "oles.melinyshyn2007@gmail.com"}
+    {name = "cnxls"}
 ]
 readme = "README.md"
 requires-python = ">=3.13"
