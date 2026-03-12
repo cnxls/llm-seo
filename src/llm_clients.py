@@ -1,8 +1,5 @@
-import os
-import time
 import logging
 from typing import Optional, Tuple, Dict, Any
-
 from openai import AsyncOpenAI, OpenAIError, RateLimitError
 from anthropic import AsyncAnthropic, APIError, RateLimitError as AnthropicRateLimitError
 from google import genai
@@ -28,28 +25,6 @@ class APIKeyMissingError(LLMClientError):
 
 class ProviderNotFoundError(LLMClientError):
     pass
-
-
-def pick_provider(name: Optional[str] = None) -> Optional[str]:
-    
-    if name:
-        mapping = {"gpt": "openai", "claude": "anthropic", "gemini": "google"}
-        return mapping.get(name.lower())
-    
-    choice = input(
-        "Which LLM would you like to use?\n"
-        "Claude for Claude, GPT for ChatGPT and Gemini for Gemini\n> "
-    ).strip().lower()
-    
-    mapping = {"gpt": "openai", "claude": "anthropic", "gemini": "google"}
-    provider = mapping.get(choice)
-    
-    if not provider:
-        logger.warning(f"Invalid provider : {choice}")
-    
-    return provider
-
-
 
 def build_client(name: Optional[str] = None) -> Optional[Tuple[str, Any]]:
     
@@ -228,67 +203,6 @@ async def ask_google(client: genai.Client, question: str, model: str) -> Dict[st
         logger.error(f"Unexpected error calling Google: {e}")
         raise
 
-
-def ask_something(question: Optional[str] = None) -> Optional[Dict[str, Any]]:
-    
-    try:
-        provider_name = pick_provider()
-        
-        if not provider_name:
-            logger.error("No LLM selected")
-            print("No valid LLM selected. Exiting.")
-            return None
-        
-        built = build_client(provider_name)
-        
-        if not built:
-            logger.error("Failed to build client")
-            print("Failed to build LLM client. Exiting.")
-            return None
-        
-        provider_key, client = built
-        
-        if not question : 
-            question = input("\nAsk something: ").strip()
-        
-        if not question:
-            logger.warning("Empty question provided")
-            print("Question cannot be empty")
-            return None
-        
-        # Get model from config
-        model = get_provider_config(provider_key)["model"]
-
-        if provider_key == "openai":
-            return ask_openai(client, question, model)
-        
-        elif provider_key == "anthropic":
-            return ask_anthropic(client, question, model)
-        
-        elif provider_key == "google":
-            return ask_google(client, question, model)
-    
-    except ValueError as e:
-        logger.error(f'Value Error: {e}')
-        print(f"\n{e}")
-        return None
-    
-    except (OpenAIError, APIError, google_exceptions.GoogleAPIError) as e:
-        logger.error(f"API Error: {e}")
-        print(f"\nAPI Error: {e}")
-        return None
-    
-    except KeyboardInterrupt:
-        logger.error("Interrupted by user")
-        print("\n\nInterrupted by user")
-        return None
-    
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}", exc_info=True)
-        print(f"\nUnexpected error: {e}")
-        return None
-
-
 async def ask_provider(provider_name: str, question: str) -> Optional[Dict[str, Any]]:
     
     try:
@@ -329,41 +243,3 @@ async def ask_all_providers(question: str) -> Dict[str, Optional[Dict[str, Any]]
     "anthropic": responses[1],
     "google": responses[2]
     }
-
-
-def pick_mode() -> Tuple[str, Optional[str]]:
-    
-    choice = input(
-        "How would you like to run queries?\n"
-        "  'all'    - Use all 3 LLMs for each query\n"
-        "  'gpt'    - Use only ChatGPT\n"
-        "  'claude' - Use only Claude\n"
-        "  'gemini' - Use only Gemini\n> "
-    ).strip().lower()
-    
-    if choice == "all":
-        return "all", None
-    
-    provider = pick_provider(choice)
-    if provider:
-        return "single", provider
-    
-    logger.warning(f"THere is not {choice}, defaulting to 'all'")
-    return "all", None
-
-if __name__ == "__main__":
-    logger.info("LLM Client Test\n")
-    response = aio.run(ask_something(""))
-
-
-    if response:
-        logger.info("\n" + "-"*50)
-        logger.info("RESPONSE:")
-        logger.info("-"*50)
-        logger.info(response["text"])
-        logger.info("-"*50)
-        logger.info(f"Model: {response['model']}")
-        logger.info(f"Tokens: {response['tokens']['total']} "
-              f"(in: {response['tokens']['input']}, out: {response['tokens']['output']})")
-        logger.info("-"*50)
-
