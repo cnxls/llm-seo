@@ -169,23 +169,6 @@ class MentionsAnalyzer:
                     })
                 
         return analysis_results
-    
-    async def mention_analyzer_async(self, responses):
-        import asyncio as aio
-
-        chunk_size = 10
-        all_results = []
-        
-        for i in range(0, len(responses), chunk_size):
-            chunk = responses[i:i + chunk_size]
-            
-            result = await aio.to_thread(self.mention_analyzer, chunk)
-            all_results.extend(result)
-        
-        return all_results
-
-
-
 
 
 def save_analysis(results, run_dir=None):

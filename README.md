@@ -32,7 +32,7 @@ This tool helps you:
 ### 1. Clone and create virtual environment
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/cnxls/llm-seo
 cd llm-seo
 
 python -m venv .venv
