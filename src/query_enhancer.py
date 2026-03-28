@@ -26,12 +26,12 @@ Return ONLY a JSON array, no other text.
 
 Queries:
 """
-
+        (provider_key, client) = build_client("openai")
         for q in batch:
             prompt = prompt + f"{q['id']}. {q['query']}\n"
-        client = build_client()
-        answer = await ask_openai(client, prompt, "gpt-4o-mini")
-        results = json.loads(answer)
+        
+        answer = await ask_openai(provider_key, prompt, "gpt-4o-mini")
+        results = json.loads(answer['text'])
         for r in results:
             original = next(q for q in batch if q['id'] == r['id'])
             enhanced.append({
