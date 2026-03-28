@@ -9,7 +9,8 @@ OUTPUT_DIR = 'data/results'
 logger = logging.getLogger(__name__)
 
 class Answer:
-    def __init__(self, category, question_id, question, answer):
+    def __init__(self, provider, category, question_id, question, answer):
+        self.provider = provider
         self.category = category
         self.question_id = question_id
         self.question = question
@@ -17,6 +18,7 @@ class Answer:
 
     def to_dict(self):
         return {
+            'provider': self.provider,
             'category': self.category,
             'id': self.question_id,
             'question': self.question,
@@ -50,6 +52,7 @@ def load_answers(run_dir=None):
                         continue
                         
                     answer = Answer(
+                        provider=provider,
                         category=data['category'],
                         question_id=data['id'],
                         question=data['question'],
@@ -156,6 +159,7 @@ class MentionsAnalyzer:
               
             for mention in mentions:
                 analysis_results.append({
+                'provider': answer.provider,
                 'question_id': answer.question_id,
                 'category': answer.category,
                 'brand' : mention['brand'],
@@ -215,37 +219,61 @@ def print_summary(results):
         marker = " (TARGET)" if stats['is_target'] else ""
         print(f"{brand}{marker}: {stats['count']} mentions, found in {stats['found']} answers, avg score: {avg_score:.2f}, won {stats['wins']} queries")
 
-def print_query_results(results):
-    seen = {}
+    by_provider = {}
     for r in results:
-        qid = r['question_id']
-        if qid not in seen:
-            seen[qid] = {'winner': r['most_mentioned'], 'target': None}
-        if r['is_target']:
-            seen[qid]['target'] = r['brand']
+        key = (r['brand'], r['provider'])
+        if key not in by_provider:
+            by_provider[key] = {'count': 0, 'score_sum': 0, 'found': 0, 'wins': 0, 'is_target': r['is_target']}
+        by_provider[key]['count'] += r['count']
+        by_provider[key]['score_sum'] += r['score']
+        if r['found']:
+            by_provider[key]['found'] += 1
+        if r['most_mentioned'] == r['brand']:
+            by_provider[key]['wins'] += 1
 
-    wins = [qid for qid, q in seen.items() if q['target'] == q['winner']]
-    losses = [(qid, q['winner']) for qid, q in seen.items() if q['target'] != q['winner']]
-    total = len(seen)
+    print("\n Per-Provider Breakdown \n")
+    for (brand, provider), stats in sorted(by_provider.items(), key=lambda x: (x[0][0], -x[1]['count'])):
+        total_for_provider = sum(1 for r in results if r['provider'] == provider)
+        avg_score = stats['score_sum'] / total_for_provider * len(brands) if total_for_provider else 0
+        marker = " (TARGET)" if stats['is_target'] else ""
+        print(f"  [{provider}] {brand}{marker}: {stats['count']} mentions, found in {stats['found']} answers, avg score: {avg_score:.2f}, won {stats['wins']} queries")
 
-    print(f"\n Query Results \n")
-    print(f"TARGET won: {len(wins)}/{total} ({len(wins)/total*100:.1f}%)")
-    print(f"TARGET lost: {len(losses)}/{total} ({len(losses)/total*100:.1f}%)")
+def print_query_results(results):
+    providers = sorted(set(r['provider'] for r in results))
 
-    if losses:
-        print(f"\nQueries where TARGET lost (first 5):")
-        for qid, winner in losses[:5]:
-            print(f"  - Query {qid}: won by {winner}")
+    for provider in providers:
+        provider_results = [r for r in results if r['provider'] == provider]
 
-    category_losses = {}
-    for qid, winner in losses:
-        categ = next(r['category'] for r in results if r['question_id'] == qid)
-        if categ not in category_losses:
-            category_losses[categ] = 0
-        category_losses[categ] += 1
-    print("\nWorst categories for Target:")
-    for categ,count in sorted(category_losses.items(),key=lambda x:x[1],reverse=True)[:3]:
-        print(f" - {categ}: lost {count} queries") 
+        seen = {}
+        for r in provider_results:
+            qid = r['question_id']
+            if qid not in seen:
+                seen[qid] = {'winner': r['most_mentioned'], 'target': None}
+            if r['is_target']:
+                seen[qid]['target'] = r['brand']
+
+        wins = [qid for qid, q in seen.items() if q['target'] == q['winner']]
+        losses = [(qid, q['winner']) for qid, q in seen.items() if q['target'] != q['winner']]
+        total = len(seen)
+
+        print(f"\n Query Results — {provider} \n")
+        print(f"TARGET won: {len(wins)}/{total} ({len(wins)/total*100:.1f}%)")
+        print(f"TARGET lost: {len(losses)}/{total} ({len(losses)/total*100:.1f}%)")
+
+        if losses:
+            print(f"\nQueries where TARGET lost (first 5):")
+            for qid, winner in losses[:5]:
+                print(f"  - Query {qid}: won by {winner}")
+
+        category_losses = {}
+        for qid, winner in losses:
+            categ = next(r['category'] for r in provider_results if r['question_id'] == qid)
+            if categ not in category_losses:
+                category_losses[categ] = 0
+            category_losses[categ] += 1
+        print("\nWorst categories for Target:")
+        for categ, count in sorted(category_losses.items(), key=lambda x: x[1], reverse=True)[:3]:
+            print(f" - {categ}: lost {count} queries")
 
 
 
