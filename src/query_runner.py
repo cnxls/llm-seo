@@ -7,15 +7,17 @@ import argparse
 
 
 class QueryOutput:
-    def __init__(self, query_id, question, response):
+    def __init__(self, query_id, question, category, response):
         self.query_id = query_id
         self.question = question
+        self.category = category
         self.response = response
 
     def to_dict(self):
         return {
             'id': self.query_id,
             'question': self.question,
+            'category': self.category,
             'response': self.response,
         }
 
@@ -101,6 +103,7 @@ class QueryRunner:
             print(f"Processing query {i}/{total} (ID: {query['id']})")
             query_id = query['id']
             question = query['query']
+            category = query['category']
             
             if mode == "all":
                 responses = await ask_all_providers(question)
@@ -108,7 +111,7 @@ class QueryRunner:
                 responses = {provider: await ask_provider(provider, question)}
             
             
-            output = QueryOutput(query_id, question, responses)
+            output = QueryOutput(query_id, question, category, responses)
             
             
             output_path = os.path.join(run_dir, f'output_{query_id}.json')

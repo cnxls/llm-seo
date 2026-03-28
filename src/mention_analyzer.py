@@ -50,7 +50,7 @@ def load_answers(run_dir=None):
                         continue
                         
                     answer = Answer(
-                        category=data.get('category', 'unknown'),
+                        category=data['category'],
                         question_id=data['id'],
                         question=data['question'],
                         answer=response_data['text']
