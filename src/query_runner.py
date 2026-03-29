@@ -1,5 +1,5 @@
 import json
-from .llm_clients import pick_mode, ask_provider, ask_all_providers
+from .llm_clients import ask_provider, ask_all_providers
 import os
 from datetime import datetime
 import asyncio as aio
@@ -70,7 +70,7 @@ class QueryRunner:
 
 
     @staticmethod
-    async def run_queries(data, start=None, limit=None, ids=None, resume_dir=None):
+    async def run_queries(data, start=None, limit=None, ids=None, resume_dir=None, mode="all"):
 
         output_dir = f'data/results'
 
@@ -90,7 +90,6 @@ class QueryRunner:
         queries = data['queries']
         queries = QueryRunner.filter_queries(queries, start, limit, ids)
 
-        mode, provider = pick_mode()
 
         if resume_dir:
             completed = QueryRunner.get_completed_ids(run_dir)
@@ -108,7 +107,7 @@ class QueryRunner:
             if mode == "all":
                 responses = await ask_all_providers(question)
             else:
-                responses = {provider: await ask_provider(provider, question)}
+                responses = {mode: await ask_provider(mode, question)}
             
             
             output = QueryOutput(query_id, question, category, responses)
