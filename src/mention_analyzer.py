@@ -44,7 +44,7 @@ def load_answers(run_dir=None):
     for filename in output_files:
         file_path = os.path.join(run_path, filename)
         try:
-            with open(file_path, 'r') as file:
+            with open(file_path, 'r', encoding='utf-8') as file:
                 data = json.load(file)
                 for provider, response_data in data['response'].items():
 
@@ -78,7 +78,7 @@ def load_answers(run_dir=None):
 def load_brands():
     competitors = {}
     try:
-        with open(f'data/entries/brands.json', 'r') as file:
+        with open(f'data/entries/brands.json', 'r', encoding='utf-8') as file:
             brands = json.load(file)
             target = brands['target']['aliases']
             name = brands['target']['name']
@@ -185,7 +185,7 @@ def save_analysis(results, run_dir=None):
         run_dir = all_dirs[0]
     
     output_path = os.path.join(base_path, run_dir, 'analysis.json')
-    with open(output_path, 'w') as f:
+    with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(results, f, indent=4)
     
     print(f"Analysis saved to {output_path}")

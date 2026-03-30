@@ -14,7 +14,7 @@ OUTPUT_PATH = DATA_DIR / "queries.json"
 
 def load_templates() -> Dict:
     try:
-        with open(TEMPLATES_PATH, 'r') as file:
+        with open(TEMPLATES_PATH, 'r', encoding='utf-8') as file:
             return json.load(file)
     
     except FileNotFoundError:
@@ -34,7 +34,7 @@ def load_templates() -> Dict:
 def load_brands():
     competitors = {}
     try:
-        with open(f'data/entries/brands.json', 'r') as file:
+        with open(f'data/entries/brands.json', 'r', encoding='utf-8') as file:
             brands = json.load(file)
             target = brands['target']['aliases']
             for brand in brands['competitors']:

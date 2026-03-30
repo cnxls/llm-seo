@@ -26,7 +26,7 @@ class QueryRunner:
     @staticmethod
     def load_queries():
         try:
-            with open('data/entries/queries.json', 'r') as file:
+            with open('data/entries/queries.json', 'r', encoding='utf-8') as file:
                 queries = json.load(file)
             return queries
         except FileNotFoundError:
@@ -115,7 +115,7 @@ class QueryRunner:
             
             output_path = os.path.join(run_dir, f'output_{query_id}.json')
             try:
-                with open(output_path, 'w') as outfile:
+                with open(output_path, 'w', encoding='utf-8') as outfile:
                     json.dump(output.to_dict(), outfile, indent=4)
                 
                 print(f"Query {query_id} saved to {output_path}")
@@ -154,7 +154,7 @@ def generate_summary(run_dir):
     }
 
     output_path = os.path.join(run_dir, f'summary.json')
-    with open(output_path, 'w') as outfile:
+    with open(output_path, 'w', encoding='utf-8') as outfile:
         json.dump(summary , outfile, indent=4)
     
     print(f"Summary saved to {output_path}")
