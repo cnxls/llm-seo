@@ -6,41 +6,61 @@
     <title>LLM SEO Monitor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        surface: { light: '#faf8f5', dark: '#262624' },
+                        card: { light: '#ffffff', dark: '#2f2f2d' },
+                        border: { light: '#e5e0d8', dark: '#3d3d3a' },
+                        accent: '#3da34f',
+                        'accent-hover': '#2e8a3e',
+                        btn: '#3da34f',
+                        'btn-hover': '#2e8a3e',
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+                    },
+                },
+            },
         }
     </script>
     <style>
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        .loader { border: 3px solid #e5e7eb; border-top-color: #6366f1; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.6s linear infinite; }
+        body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; font-size: 16px; }
+        .loader { border: 3px solid #e5e0d8; border-top-color: #3da34f; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.6s linear infinite; }
+        .dark .loader { border-color: #3d3d3a; border-top-color: #4dba5e; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .tab-btn.active { border-bottom: 2px solid #6366f1; color: #6366f1; }
-        .dark .tab-btn.active { border-bottom-color: #818cf8; color: #818cf8; }
-        .tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 9999px; font-size: 0.75rem; }
-        .tag-remove { cursor: pointer; opacity: 0.6; }
+        .tab-btn.active { border-bottom: 3px solid #3da34f; color: #3da34f; }
+        .dark .tab-btn.active { border-bottom-color: #4dba5e; color: #4dba5e; }
+        .tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 9999px; font-size: 0.875rem; }
+        .tag-remove { cursor: pointer; opacity: 0.6; font-size: 1rem; }
         .tag-remove:hover { opacity: 1; }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-950 min-h-screen text-gray-900 dark:text-gray-100 transition-colors">
+<body class="bg-surface-light dark:bg-surface-dark min-h-screen text-gray-900 dark:text-gray-100 transition-colors">
 
     <!-- Header -->
-    <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+    <header class="bg-card-light dark:bg-card-dark border-b border-border-light dark:border-border-dark sticky top-0 z-10">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div>
-                <h1 class="text-xl font-bold">LLM SEO Monitor</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400" id="targetLabel"></p>
+                <h1 class="text-2xl font-bold">LLM SEO Monitor</h1>
+                <p class="text-base text-gray-500 dark:text-gray-400" id="targetLabel"></p>
             </div>
             <div class="flex items-center gap-3">
                 <!-- Tabs -->
                 <nav class="flex gap-1 mr-4">
-                    <button class="tab-btn active px-3 py-1.5 text-sm font-medium rounded-t" data-tab="dashboard">Dashboard</button>
-                    <button class="tab-btn px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 rounded-t" data-tab="settings">Settings</button>
+                    <button class="tab-btn active px-4 py-2 text-base font-medium rounded-t" data-tab="dashboard">Dashboard</button>
+                    <button class="tab-btn px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 rounded-t" data-tab="run">Run</button>
+                    <button class="tab-btn px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 rounded-t" data-tab="settings">Settings</button>
                 </nav>
-                <select id="runSelector" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500">
+                <select id="runSelector" class="border border-border-light dark:border-border-dark rounded-lg px-3 py-2 text-base bg-card-light dark:bg-card-dark dark:text-gray-200 focus:ring-2 focus:ring-accent">
                 </select>
                 <!-- Theme Toggle -->
-                <button id="themeToggle" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Toggle theme">
+                <button id="themeToggle" class="p-2 rounded-lg border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Toggle theme">
                     <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </button>
@@ -54,34 +74,41 @@
         <!-- ==================== DASHBOARD TAB ==================== -->
         <div id="tab-dashboard" class="space-y-6">
 
+            <!-- Empty state -->
+            <div id="dashboardEmpty" class="hidden card p-12 text-center">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <h2 class="text-xl font-semibold mb-2 text-gray-500 dark:text-gray-400">No runs yet</h2>
+                <p class="text-base text-gray-400 dark:text-gray-500 mb-4">Go to the <strong>Run</strong> tab to start your first query run against LLM providers.</p>
+            </div>
+
             <!-- Stat Cards -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="card p-5">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Queries</p>
-                    <p class="text-2xl font-bold" id="statQueries">-</p>
+                    <p class="text-base text-gray-500 dark:text-gray-400">Total Queries</p>
+                    <p class="text-3xl font-bold" id="statQueries">-</p>
                 </div>
                 <div class="card p-5">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Providers</p>
-                    <p class="text-2xl font-bold" id="statProviders">-</p>
+                    <p class="text-base text-gray-500 dark:text-gray-400">Providers</p>
+                    <p class="text-3xl font-bold" id="statProviders">-</p>
                 </div>
                 <div class="card p-5">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Target Brand</p>
-                    <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400" id="statTarget">-</p>
+                    <p class="text-base text-gray-500 dark:text-gray-400">Target Brand</p>
+                    <p class="text-3xl font-bold text-accent" id="statTarget">-</p>
                 </div>
                 <div class="card p-5">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Available Runs</p>
-                    <p class="text-2xl font-bold" id="statRuns">-</p>
+                    <p class="text-base text-gray-500 dark:text-gray-400">Available Runs</p>
+                    <p class="text-3xl font-bold" id="statRuns">-</p>
                 </div>
             </div>
 
             <!-- Brand Table + Provider Chart -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 card p-6">
-                    <h2 class="text-lg font-semibold mb-4">Brand Rankings</h2>
+                    <h2 class="text-xl font-semibold mb-4">Brand Rankings</h2>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-base">
                             <thead>
-                                <tr class="text-left text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                <tr class="text-left text-gray-500 dark:text-gray-400 border-b border-border-light dark:border-border-dark">
                                     <th class="pb-3 pr-4">#</th>
                                     <th class="pb-3 pr-4">Brand</th>
                                     <th class="pb-3 pr-4 text-right">Mentions</th>
@@ -95,16 +122,16 @@
                     </div>
                 </div>
                 <div class="card p-6">
-                    <h2 class="text-lg font-semibold mb-4">Provider Comparison</h2>
-                    <p class="text-xs text-gray-400 mb-3">Target brand mentions by provider</p>
+                    <h2 class="text-xl font-semibold mb-4">Provider Comparison</h2>
+                    <p class="text-sm text-gray-400 mb-3">Target brand mentions by provider</p>
                     <canvas id="providerChart"></canvas>
                 </div>
             </div>
 
             <!-- Category Performance -->
             <div class="card p-6">
-                <h2 class="text-lg font-semibold mb-4">Category Performance</h2>
-                <p class="text-xs text-gray-400 mb-3">Target brand win rate by query category</p>
+                <h2 class="text-xl font-semibold mb-4">Category Performance</h2>
+                <p class="text-sm text-gray-400 mb-3">Target brand win rate by query category</p>
                 <div style="max-height: 300px;">
                     <canvas id="categoryChart"></canvas>
                 </div>
@@ -113,15 +140,15 @@
             <!-- Query Details -->
             <div class="card p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-semibold">Query Details</h2>
-                    <select id="categoryFilter" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-800">
+                    <h2 class="text-xl font-semibold">Query Details</h2>
+                    <select id="categoryFilter" class="border border-border-light dark:border-border-dark rounded-lg px-3 py-1.5 text-base bg-card-light dark:bg-card-dark">
                         <option value="all">All Categories</option>
                     </select>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
+                    <table class="w-full text-base">
                         <thead>
-                            <tr class="text-left text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                            <tr class="text-left text-gray-500 dark:text-gray-400 border-b border-border-light dark:border-border-dark">
                                 <th class="pb-3 pr-4">ID</th>
                                 <th class="pb-3 pr-4">Category</th>
                                 <th class="pb-3 pr-4">Question</th>
@@ -136,60 +163,163 @@
             </div>
         </div>
 
+        <!-- ==================== RUN TAB ==================== -->
+        <div id="tab-run" class="hidden space-y-6">
+
+            <!-- Query Preview -->
+            <div class="card p-6">
+                <h2 class="text-xl font-semibold mb-1">Query Preview</h2>
+                <p class="text-base text-gray-500 dark:text-gray-400 mb-4">Review the queries that will be sent to all LLM providers. Uncheck any you want to skip.</p>
+                <div id="previewLoading" class="flex items-center gap-2 text-base text-gray-500">
+                    <div class="loader"></div> Generating preview...
+                </div>
+                <div id="previewContent" class="hidden">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-base font-medium" id="previewCount"></span>
+                            <button onclick="toggleAllQueries()" class="text-sm text-accent hover:underline">Toggle all</button>
+                        </div>
+                        <select id="previewCategoryFilter" class="border border-border-light dark:border-border-dark rounded-lg px-3 py-1.5 text-base bg-card-light dark:bg-card-dark">
+                            <option value="all">All Categories</option>
+                        </select>
+                    </div>
+                    <div id="previewList" class="max-h-80 overflow-y-auto space-y-1"></div>
+                </div>
+            </div>
+
+            <!-- Run Controls -->
+            <div class="card p-6">
+                <h2 class="text-xl font-semibold mb-1">Run Controls</h2>
+                <p class="text-base text-gray-500 dark:text-gray-400 mb-4">Start sending selected queries to OpenAI, Anthropic, and Google. Results will be analyzed automatically.</p>
+
+                <!-- Idle state -->
+                <div id="runIdle">
+                    <button onclick="startRun()" class="px-8 py-3 bg-btn text-white rounded-lg text-lg font-semibold hover:bg-btn-hover transition-colors">
+                        Start Run
+                    </button>
+                </div>
+
+                <!-- Active state -->
+                <div id="runActive" class="hidden space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-base font-medium" id="runProgressLabel">Processing...</span>
+                            <span class="text-base text-gray-500" id="runProgressCount">0 / 0</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                            <div id="runProgressBar" class="bg-accent h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <p class="text-sm text-gray-400 mt-2 truncate" id="runCurrentQuery"></p>
+                    </div>
+                    <button onclick="stopRun()" class="px-6 py-2.5 text-base bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors">
+                        Stop Run
+                    </button>
+                </div>
+
+                <!-- Done state -->
+                <div id="runDone" class="hidden space-y-3">
+                    <div class="flex items-center gap-2 text-accent">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span class="text-lg font-medium" id="runDoneMessage">Run completed!</span>
+                    </div>
+                    <button onclick="viewRunResults()" class="px-6 py-2.5 text-base bg-btn text-white rounded-lg hover:bg-btn-hover transition-colors">
+                        View Results
+                    </button>
+                </div>
+
+                <!-- Error state -->
+                <div id="runError" class="hidden">
+                    <div class="flex items-center gap-2 text-rose-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span class="text-lg font-medium" id="runErrorMessage"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ==================== SETTINGS TAB ==================== -->
-        <div id="tab-settings" class="hidden space-y-6">
+        <div id="tab-settings" class="hidden space-y-8">
+
+            <!-- Saved Configs -->
+            <div class="card p-6">
+                <h2 class="text-xl font-bold mb-2">Saved Configurations</h2>
+                <p class="text-base text-gray-500 dark:text-gray-400 mb-4">Load a previously saved setup, or save your current settings for later.</p>
+                <div class="flex flex-wrap items-end gap-4">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-base font-medium mb-2 text-gray-700 dark:text-gray-300">Select a config</label>
+                        <select id="configSelector" class="input-field w-full text-base py-3">
+                            <option value="">-- Choose a saved config --</option>
+                        </select>
+                    </div>
+                    <button onclick="loadSelectedConfig()" class="px-5 py-3 text-base bg-btn text-white rounded-lg font-semibold hover:bg-btn-hover transition-colors">Load</button>
+                    <button onclick="deleteSelectedConfig()" class="px-5 py-3 text-base border-2 border-rose-400 text-rose-500 rounded-lg font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors">Delete</button>
+                </div>
+                <div class="mt-5 pt-5 border-t border-border-light dark:border-border-dark">
+                    <label class="block text-base font-medium mb-2 text-gray-700 dark:text-gray-300">Save current settings as</label>
+                    <div class="flex gap-3">
+                        <input type="text" id="configNameInput" class="input-field flex-1 text-base py-3" placeholder="e.g. Note-taking apps, SaaS tools, etc.">
+                        <button onclick="saveCurrentConfig()" class="px-5 py-3 text-base bg-btn text-white rounded-lg font-semibold hover:bg-btn-hover transition-colors whitespace-nowrap">Save Config</button>
+                    </div>
+                </div>
+                <p id="configStatus" class="mt-3 text-base"></p>
+            </div>
 
             <!-- Target Brand -->
-            <div class="card p-6">
-                <h2 class="text-lg font-semibold mb-1">Target Brand</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">The brand you want to track across LLM responses. Aliases help catch different spellings or abbreviations.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="card p-8 border-2 border-accent/30">
+                <h2 class="text-xl font-bold mb-2">Your Brand</h2>
+                <p class="text-base text-gray-500 dark:text-gray-400 mb-6">This is the brand you are tracking. We will monitor how often LLMs mention it in their answers.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">Brand Name</label>
-                        <input type="text" id="settingsTargetName" class="input-field w-full" placeholder="e.g. Obsidian">
+                        <label class="block text-base font-medium mb-2 text-gray-700 dark:text-gray-300">Brand Name</label>
+                        <input type="text" id="settingsTargetName" class="input-field w-full text-lg py-3" placeholder="e.g. Obsidian">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">Aliases</label>
-                        <div class="flex flex-wrap gap-2 mb-2" id="targetAliasesContainer"></div>
-                        <input type="text" id="targetAliasInput" class="input-field w-full" placeholder="Type an alias and press Enter">
+                        <label class="block text-base font-medium mb-2 text-gray-700 dark:text-gray-300">Other Names / Spellings</label>
+                        <p class="text-sm text-gray-400 mb-2">Add all the different ways people might write your brand name</p>
+                        <div class="flex flex-wrap gap-2 mb-3" id="targetAliasesContainer"></div>
+                        <input type="text" id="targetAliasInput" class="input-field w-full text-base py-3" placeholder="Type a name and press Enter">
                     </div>
                 </div>
             </div>
 
             <!-- Competitors -->
-            <div class="card p-6">
-                <h2 class="text-lg font-semibold mb-1">Competitors</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Brands to compare against your target. Click on a competitor to edit its aliases.</p>
-                <div id="competitorsContainer" class="space-y-2"></div>
-                <div class="mt-3 flex gap-2">
-                    <input type="text" id="addCompetitorInput" class="input-field flex-1 text-sm" placeholder="Type competitor name and press Enter">
-                    <button onclick="addCompetitorFromInput()" class="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap">+ Add</button>
+            <div class="card p-8">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-xl font-bold">Competitors</h2>
+                    <button onclick="addCompetitorFromInput()" class="px-5 py-2.5 text-base bg-btn text-white rounded-lg font-semibold hover:bg-btn-hover transition-colors">+ Add Competitor</button>
+                </div>
+                <p class="text-base text-gray-500 dark:text-gray-400 mb-6">Add the brands you want to compare against. Each competitor needs a name and any alternative spellings.</p>
+
+                <div id="competitorsContainer" class="space-y-4"></div>
+
+                <div class="mt-4">
+                    <input type="text" id="addCompetitorInput" class="input-field w-full text-base py-3" placeholder="Type a new competitor name and press Enter to add">
                 </div>
             </div>
 
             <!-- Query Templates -->
-            <div class="card p-6">
-                <h2 class="text-lg font-semibold mb-1">Query Templates</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Templates define the questions that will be sent to LLMs. Use placeholders like <code class="text-xs bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">{category}</code> and <code class="text-xs bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">{use_case}</code> to generate variations.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="card p-8">
+                <h2 class="text-xl font-bold mb-2">Query Templates</h2>
+                <p class="text-base text-gray-500 dark:text-gray-400 mb-6">Templates define the questions that will be sent to LLMs. Use placeholders like <code class="text-sm bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">{category}</code> and <code class="text-sm bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">{use_case}</code> to generate variations.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
-                        <label class="block text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">Category</label>
-                        <input type="text" id="settingsCategory" class="input-field w-full" placeholder="e.g. note-taking">
+                        <label class="block text-base font-medium mb-2 text-gray-700 dark:text-gray-300">Category</label>
+                        <input type="text" id="settingsCategory" class="input-field w-full text-base py-3" placeholder="e.g. note-taking">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">Use Cases</label>
-                        <div class="flex flex-wrap gap-2 mb-2" id="useCasesContainer"></div>
-                        <input type="text" id="useCaseInput" class="input-field w-full" placeholder="Type a use case and press Enter">
+                        <label class="block text-base font-medium mb-2 text-gray-700 dark:text-gray-300">Use Cases</label>
+                        <div class="flex flex-wrap gap-2 mb-3" id="useCasesContainer"></div>
+                        <input type="text" id="useCaseInput" class="input-field w-full text-base py-3" placeholder="Type a use case and press Enter">
                     </div>
                 </div>
                 <div id="templatesContainer" class="space-y-4"></div>
-                <button onclick="addTemplateCategory()" class="mt-4 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">+ Add Category</button>
+                <button onclick="addTemplateCategory()" class="mt-4 px-5 py-2.5 text-base border-2 border-border-light dark:border-border-dark rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">+ Add Category</button>
             </div>
 
             <!-- Save Button -->
             <div class="flex items-center gap-4">
-                <button onclick="saveSettings()" class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">Save All Settings</button>
-                <span id="saveStatus" class="text-sm text-gray-500 dark:text-gray-400"></span>
+                <button onclick="saveSettings()" class="px-8 py-3 bg-btn text-white rounded-lg text-lg font-semibold hover:bg-btn-hover transition-colors">Save All Settings</button>
+                <span id="saveStatus" class="text-base text-gray-500 dark:text-gray-400"></span>
             </div>
         </div>
     </main>
@@ -234,8 +364,10 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.add('active');
         btn.classList.remove('text-gray-500', 'dark:text-gray-400');
         document.getElementById('tab-dashboard').classList.toggle('hidden', btn.dataset.tab !== 'dashboard');
+        document.getElementById('tab-run').classList.toggle('hidden', btn.dataset.tab !== 'run');
         document.getElementById('tab-settings').classList.toggle('hidden', btn.dataset.tab !== 'settings');
         if (btn.dataset.tab === 'settings') loadSettings();
+        if (btn.dataset.tab === 'run') loadPreview();
     });
 });
 
@@ -247,16 +379,16 @@ let settingsBrands = null;
 let settingsTemplates = null;
 
 const COLORS = {
-    indigo: 'rgb(99, 102, 241)',
+    green: 'rgb(61, 163, 79)',
     emerald: 'rgb(16, 185, 129)',
     amber: 'rgb(245, 158, 11)',
     rose: 'rgb(244, 63, 94)',
     sky: 'rgb(14, 165, 233)',
-    violet: 'rgb(139, 92, 246)',
+    orange: 'rgb(224, 122, 47)',
 };
-const PROVIDER_COLORS = { openai: COLORS.emerald, anthropic: COLORS.indigo, google: COLORS.sky };
+const PROVIDER_COLORS = { openai: COLORS.emerald, anthropic: COLORS.orange, google: COLORS.sky };
 
-function chartGridColor() { return isDark() ? '#374151' : '#f3f4f6'; }
+function chartGridColor() { return isDark() ? '#3d3d3a' : '#e5e0d8'; }
 function chartTextColor() { return isDark() ? '#9ca3af' : '#6b7280'; }
 
 // ==================== INIT ====================
@@ -277,7 +409,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     selector.addEventListener('change', () => loadRun(selector.value));
     document.getElementById('categoryFilter').addEventListener('change', filterQueries);
-    if (runs.length > 0) loadRun(runs[0].name);
+    if (runs.length > 0) {
+        loadRun(runs[0].name);
+    } else {
+        document.getElementById('dashboardEmpty').classList.remove('hidden');
+    }
 });
 
 async function fetchJSON(url) { return (await fetch(url)).json(); }
@@ -312,9 +448,9 @@ function renderStats(summary, providers) {
 function renderBrandTable(brands) {
     const tbody = document.getElementById('brandTableBody');
     tbody.innerHTML = brands.map((b, i) => {
-        const cls = b.is_target ? 'bg-indigo-50 dark:bg-indigo-950/30 font-semibold' : '';
-        const badge = b.is_target ? '<span class="ml-2 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full">TARGET</span>' : '';
-        return `<tr class="${cls} border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+        const cls = b.is_target ? 'bg-accent/5 font-semibold' : '';
+        const badge = b.is_target ? '<span class="ml-2 text-xs bg-accent/20 text-accent px-2 py-0.5 rounded-full">TARGET</span>' : '';
+        return `<tr class="${cls} border-b border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-800/50">
             <td class="py-3 pr-4 text-gray-400">${i + 1}</td>
             <td class="py-3 pr-4">${b.brand}${badge}</td>
             <td class="py-3 pr-4 text-right">${b.mentions}</td>
@@ -336,7 +472,7 @@ function renderProviderChart(data) {
             datasets: [{
                 label: 'Mentions',
                 data: data.mentions,
-                backgroundColor: data.providers.map(p => PROVIDER_COLORS[p] || COLORS.violet),
+                backgroundColor: data.providers.map(p => PROVIDER_COLORS[p] || COLORS.orange),
                 borderRadius: 6,
             }],
         },
@@ -408,19 +544,19 @@ function renderQueryTable(queries) {
             if (!pdata) return '<td class="py-3 pr-4 text-center text-gray-300 dark:text-gray-600">-</td>';
             const winner = pdata.winner || '-';
             const isTargetWin = pdata.brands && pdata.brands.some(b => b.is_target && b.brand === winner);
-            const cls = isTargetWin ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-rose-500 dark:text-rose-400';
+            const cls = isTargetWin ? 'text-accent font-medium' : 'text-rose-500 dark:text-rose-400';
             return `<td class="py-3 pr-4 text-center ${cls}">${winner}</td>`;
         }).join('');
 
         return `
-            <tr class="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer query-row" data-category="${q.category}" data-qid="${q.question_id}">
+            <tr class="border-b border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer query-row" data-category="${q.category}" data-qid="${q.question_id}">
                 <td class="py-3 pr-4 text-gray-400">${q.question_id}</td>
-                <td class="py-3 pr-4"><span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">${q.category}</span></td>
+                <td class="py-3 pr-4"><span class="px-2 py-0.5 rounded-full text-sm bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">${q.category}</span></td>
                 <td class="py-3 pr-4 max-w-md truncate" title="${escapeHtml(q.question)}">${escapeHtml(q.question)}</td>
                 ${providerCells}
             </tr>
             <tr class="detail-row hidden" data-qid="${q.question_id}">
-                <td colspan="6" class="py-3 px-8 bg-gray-50 dark:bg-gray-900">${renderDetailPanel(q)}</td>
+                <td colspan="6" class="py-3 px-8 bg-surface-light dark:bg-surface-dark">${renderDetailPanel(q)}</td>
             </tr>`;
     }).join('');
 
@@ -435,14 +571,14 @@ function renderDetailPanel(query) {
     return '<div class="grid grid-cols-1 md:grid-cols-3 gap-4">' +
         Object.entries(query.providers).map(([p, pdata]) => {
             const brandsHtml = pdata.brands.sort((a, b) => b.count - a.count).map(b => {
-                const color = b.is_target ? 'text-indigo-700 dark:text-indigo-300 font-medium' : '';
-                const bar = b.count > 0 ? `<div class="bg-indigo-200 dark:bg-indigo-800 rounded h-1.5 mt-1" style="width: ${Math.min(b.count * 20, 100)}%"></div>` : '';
+                const color = b.is_target ? 'text-accent font-medium' : '';
+                const bar = b.count > 0 ? `<div class="bg-accent/30 rounded h-1.5 mt-1" style="width: ${Math.min(b.count * 20, 100)}%"></div>` : '';
                 return `<div class="flex justify-between items-center ${color}"><span>${b.brand}</span><span class="text-xs">${b.count} mentions</span></div>${bar}`;
             }).join('');
-            return `<div class="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                <p class="font-medium text-sm mb-2" style="color: ${PROVIDER_COLORS[p] || '#666'}">${p}</p>
-                <p class="text-xs text-gray-400 mb-2">Winner: <span class="font-medium text-gray-700 dark:text-gray-200">${pdata.winner || '-'}</span></p>
-                <div class="space-y-1.5 text-xs">${brandsHtml}</div>
+            return `<div class="bg-card-light dark:bg-card-dark rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <p class="font-medium text-base mb-2" style="color: ${PROVIDER_COLORS[p] || '#666'}">${p}</p>
+                <p class="text-sm text-gray-400 mb-2">Winner: <span class="font-medium text-gray-700 dark:text-gray-200">${pdata.winner || '-'}</span></p>
+                <div class="space-y-1.5 text-sm">${brandsHtml}</div>
             </div>`;
         }).join('') + '</div>';
 }
@@ -470,6 +606,168 @@ function escapeHtml(text) {
     return d.innerHTML;
 }
 
+// ==================== RUN ====================
+let previewQueries = [];
+let selectedQueryIds = new Set();
+let runEventSource = null;
+let lastRunName = null;
+
+async function loadPreview() {
+    document.getElementById('previewLoading').classList.remove('hidden');
+    document.getElementById('previewContent').classList.add('hidden');
+
+    try {
+        const data = await fetchJSON('/api/queries/preview');
+        previewQueries = data.queries;
+        selectedQueryIds = new Set(previewQueries.map(q => q.id));
+        renderPreview();
+    } catch (e) {
+        document.getElementById('previewLoading').innerHTML = '<span class="text-rose-500">Failed to load preview</span>';
+    }
+}
+
+function renderPreview() {
+    document.getElementById('previewLoading').classList.add('hidden');
+    document.getElementById('previewContent').classList.remove('hidden');
+
+    const filterVal = document.getElementById('previewCategoryFilter').value;
+    const filtered = filterVal === 'all' ? previewQueries : previewQueries.filter(q => q.category === filterVal);
+
+    document.getElementById('previewCount').textContent = `${selectedQueryIds.size} of ${previewQueries.length} queries selected`;
+
+    const categories = [...new Set(previewQueries.map(q => q.category))].sort();
+    const catFilter = document.getElementById('previewCategoryFilter');
+    const currentVal = catFilter.value;
+    catFilter.innerHTML = '<option value="all">All Categories</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
+    catFilter.value = currentVal;
+    catFilter.onchange = () => renderPreview();
+
+    const list = document.getElementById('previewList');
+    list.innerHTML = filtered.map(q => `
+        <label class="flex items-start gap-2 p-2.5 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer text-base">
+            <input type="checkbox" class="mt-1 rounded w-5 h-5" ${selectedQueryIds.has(q.id) ? 'checked' : ''} onchange="toggleQuery(${q.id}, this.checked)">
+            <span class="flex-1">
+                <span class="text-gray-400 mr-1">#${q.id}</span>
+                <span class="px-1.5 py-0.5 rounded-full text-sm bg-gray-100 dark:bg-gray-800 text-gray-500 mr-1">${escapeHtml(q.category)}</span>
+                ${escapeHtml(q.query)}
+            </span>
+        </label>
+    `).join('');
+}
+
+function toggleQuery(id, checked) {
+    if (checked) selectedQueryIds.add(id); else selectedQueryIds.delete(id);
+    document.getElementById('previewCount').textContent = `${selectedQueryIds.size} of ${previewQueries.length} queries selected`;
+}
+
+function toggleAllQueries() {
+    if (selectedQueryIds.size === previewQueries.length) {
+        selectedQueryIds.clear();
+    } else {
+        selectedQueryIds = new Set(previewQueries.map(q => q.id));
+    }
+    renderPreview();
+}
+
+async function startRun() {
+    if (selectedQueryIds.size === 0) return;
+
+    const queryIds = selectedQueryIds.size === previewQueries.length ? null : [...selectedQueryIds];
+
+    try {
+        const res = await fetch('/api/runs/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query_ids: queryIds }),
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            alert(err.error || 'Failed to start run');
+            return;
+        }
+
+        showRunState('active');
+        listenToProgress();
+    } catch (e) {
+        alert('Failed to start run: ' + e.message);
+    }
+}
+
+function listenToProgress() {
+    if (runEventSource) runEventSource.close();
+
+    runEventSource = new EventSource('/api/runs/active');
+    runEventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        updateProgress(data);
+
+        if (!data.running && data.completed > 0) {
+            runEventSource.close();
+            runEventSource = null;
+            lastRunName = data.run_name;
+
+            if (data.error) {
+                document.getElementById('runErrorMessage').textContent = data.error;
+                showRunState('error');
+            } else {
+                document.getElementById('runDoneMessage').textContent = `Run completed! ${data.completed} queries processed.`;
+                showRunState('done');
+            }
+        }
+    };
+
+    runEventSource.onerror = () => {
+        runEventSource.close();
+        runEventSource = null;
+        showRunState('error');
+        document.getElementById('runErrorMessage').textContent = 'Lost connection to server';
+    };
+}
+
+function updateProgress(data) {
+    const pct = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
+    document.getElementById('runProgressBar').style.width = pct + '%';
+    document.getElementById('runProgressCount').textContent = `${data.completed} / ${data.total}`;
+    document.getElementById('runProgressLabel').textContent = `Processing... ${pct}%`;
+    document.getElementById('runCurrentQuery').textContent = data.current_query || '';
+}
+
+async function stopRun() {
+    try {
+        await fetch('/api/runs/stop', { method: 'POST' });
+    } catch (e) { /* ignore */ }
+}
+
+function viewRunResults() {
+    showRunState('idle');
+    document.querySelector('[data-tab="dashboard"]').click();
+
+    fetchJSON('/api/runs').then(runs => {
+        const selector = document.getElementById('runSelector');
+        selector.innerHTML = '';
+        runs.forEach(run => {
+            const opt = document.createElement('option');
+            opt.value = run.name;
+            opt.textContent = `${run.name} (${run.query_count} queries)`;
+            selector.appendChild(opt);
+        });
+        if (lastRunName) {
+            selector.value = lastRunName;
+            loadRun(lastRunName);
+        } else if (runs.length > 0) {
+            loadRun(runs[0].name);
+        }
+    });
+}
+
+function showRunState(state) {
+    document.getElementById('runIdle').classList.toggle('hidden', state !== 'idle');
+    document.getElementById('runActive').classList.toggle('hidden', state !== 'active');
+    document.getElementById('runDone').classList.toggle('hidden', state !== 'done');
+    document.getElementById('runError').classList.toggle('hidden', state !== 'error');
+}
+
 // ==================== SETTINGS ====================
 async function loadSettings() {
     const [brands, templates] = await Promise.all([
@@ -479,6 +777,91 @@ async function loadSettings() {
     settingsBrands = brands;
     settingsTemplates = templates;
     renderSettings();
+    loadConfigList();
+}
+
+async function loadConfigList() {
+    const configs = await fetchJSON('/api/configs');
+    const selector = document.getElementById('configSelector');
+    selector.innerHTML = '<option value="">-- Choose a saved config --</option>';
+    configs.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name;
+        opt.textContent = `${c.name} (${c.created})`;
+        selector.appendChild(opt);
+    });
+}
+
+async function loadSelectedConfig() {
+    const name = document.getElementById('configSelector').value;
+    if (!name) return;
+    const status = document.getElementById('configStatus');
+
+    try {
+        const config = await fetchJSON(`/api/configs/${encodeURIComponent(name)}`);
+        settingsBrands = config.brands;
+        settingsTemplates = config.templates;
+        renderSettings();
+        status.textContent = `Loaded "${name}". Don\u2019t forget to click Save All Settings to apply.`;
+        status.className = 'mt-3 text-base text-accent';
+        setTimeout(() => { status.textContent = ''; }, 5000);
+    } catch (e) {
+        status.textContent = 'Failed to load config';
+        status.className = 'mt-3 text-base text-rose-500';
+    }
+}
+
+async function saveCurrentConfig() {
+    const nameInput = document.getElementById('configNameInput');
+    const name = nameInput.value.trim();
+    const status = document.getElementById('configStatus');
+
+    if (!name) {
+        nameInput.focus();
+        status.textContent = 'Please enter a name for this config';
+        status.className = 'mt-3 text-base text-rose-500';
+        return;
+    }
+
+    // Read current values from inputs before saving
+    settingsBrands.target.name = document.getElementById('settingsTargetName').value.trim();
+    settingsTemplates.placeholders.category = document.getElementById('settingsCategory').value.trim();
+
+    try {
+        await fetch('/api/configs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, brands: settingsBrands, templates: settingsTemplates }),
+        });
+        nameInput.value = '';
+        status.textContent = `Config "${name}" saved!`;
+        status.className = 'mt-3 text-base text-accent';
+        loadConfigList();
+        setTimeout(() => { status.textContent = ''; }, 3000);
+    } catch (e) {
+        status.textContent = 'Failed to save config';
+        status.className = 'mt-3 text-base text-rose-500';
+    }
+}
+
+async function deleteSelectedConfig() {
+    const selector = document.getElementById('configSelector');
+    const name = selector.value;
+    if (!name) return;
+
+    if (!confirm(`Delete config "${name}"?`)) return;
+
+    const status = document.getElementById('configStatus');
+    try {
+        await fetch(`/api/configs/${encodeURIComponent(name)}`, { method: 'DELETE' });
+        status.textContent = `Config "${name}" deleted`;
+        status.className = 'mt-3 text-base text-accent';
+        loadConfigList();
+        setTimeout(() => { status.textContent = ''; }, 3000);
+    } catch (e) {
+        status.textContent = 'Failed to delete config';
+        status.className = 'mt-3 text-base text-rose-500';
+    }
 }
 
 function renderSettings() {
@@ -503,27 +886,22 @@ function renderSettings() {
     // Competitors
     const container = document.getElementById('competitorsContainer');
     container.innerHTML = settingsBrands.competitors.map((c, i) => `
-        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-hidden">
-            <div class="flex items-center gap-3 px-3 py-2.5 cursor-pointer select-none" onclick="toggleCompetitor(${i})">
-                <svg class="w-4 h-4 text-gray-400 transition-transform comp-chevron-${i}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                <span class="font-medium text-sm flex-1">${escapeHtml(c.name) || '<span class="text-gray-400 italic">Unnamed</span>'}</span>
-                <span class="text-xs text-gray-400">${c.aliases.length} alias${c.aliases.length !== 1 ? 'es' : ''}</span>
-                <button onclick="event.stopPropagation(); removeCompetitor(${i})" class="p-1 text-gray-400 hover:text-rose-500 transition-colors" title="Remove competitor">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div class="comp-detail-${i} hidden border-t border-gray-200 dark:border-gray-700 px-3 py-3">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Name</label>
-                        <input type="text" value="${escapeHtml(c.name)}" onchange="settingsBrands.competitors[${i}].name = this.value; renderSettings()" class="input-field w-full text-sm">
+        <div class="rounded-xl border-2 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-3">
+                        <label class="text-base font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Name:</label>
+                        <input type="text" value="${escapeHtml(c.name)}" onchange="settingsBrands.competitors[${i}].name = this.value; renderSettings()" class="input-field flex-1 text-base py-2">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Aliases</label>
-                        <div class="flex flex-wrap gap-1.5 mb-1.5" id="compAliases-${i}"></div>
-                        <input type="text" class="input-field w-full text-sm" placeholder="Type alias and press Enter" id="compAliasInput-${i}">
+                        <label class="text-base font-medium text-gray-700 dark:text-gray-300 mb-2 block">Other names / spellings for <strong>${escapeHtml(c.name) || 'this brand'}</strong>:</label>
+                        <div class="flex flex-wrap gap-2 mb-2" id="compAliases-${i}"></div>
+                        <input type="text" class="input-field w-full text-base py-2" placeholder="Type an alias and press Enter" id="compAliasInput-${i}">
                     </div>
                 </div>
+                <button onclick="removeCompetitor(${i})" class="ml-4 p-2.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors self-start" title="Remove this competitor">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
             </div>
         </div>
     `).join('');
@@ -580,22 +958,22 @@ function renderSettings() {
     const tplContainer = document.getElementById('templatesContainer');
     const templateEntries = Object.entries(settingsTemplates.templates || {});
     tplContainer.innerHTML = templateEntries.map(([cat, tpls], ci) => `
-        <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div class="p-5 rounded-xl border-2 border-border-light dark:border-border-dark">
             <div class="flex items-center justify-between mb-3">
-                <h3 class="font-medium text-sm">${escapeHtml(cat)}</h3>
-                <button onclick="removeTemplateCategory('${escapeHtml(cat)}')" class="text-xs text-gray-400 hover:text-rose-500">Remove category</button>
+                <h3 class="font-semibold text-base">${escapeHtml(cat)}</h3>
+                <button onclick="removeTemplateCategory('${escapeHtml(cat)}')" class="text-sm text-gray-400 hover:text-rose-500">Remove category</button>
             </div>
             <div class="space-y-2" id="tplList-${ci}">
                 ${tpls.map((t, ti) => `
                     <div class="flex gap-2 items-center">
-                        <input type="text" value="${escapeHtml(t)}" class="input-field flex-1 text-sm" onchange="settingsTemplates.templates['${escapeHtml(cat)}'][${ti}] = this.value">
-                        <button onclick="settingsTemplates.templates['${escapeHtml(cat)}'].splice(${ti}, 1); renderSettings()" class="p-1 text-gray-400 hover:text-rose-500">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        <input type="text" value="${escapeHtml(t)}" class="input-field flex-1 text-base" onchange="settingsTemplates.templates['${escapeHtml(cat)}'][${ti}] = this.value">
+                        <button onclick="settingsTemplates.templates['${escapeHtml(cat)}'].splice(${ti}, 1); renderSettings()" class="p-1.5 text-gray-400 hover:text-rose-500">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
                     </div>
                 `).join('')}
             </div>
-            <button onclick="settingsTemplates.templates['${escapeHtml(cat)}'].push(''); renderSettings()" class="mt-2 text-xs text-indigo-600 dark:text-indigo-400 hover:underline">+ Add template</button>
+            <button onclick="settingsTemplates.templates['${escapeHtml(cat)}'].push(''); renderSettings()" class="mt-3 text-sm text-accent hover:underline">+ Add template</button>
         </div>
     `).join('');
 }
@@ -604,29 +982,22 @@ function renderTags(containerId, items, onRemove) {
     const el = document.getElementById(containerId);
     if (!el) return;
     el.innerHTML = items.map((item, i) =>
-        `<span class="tag bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300">${escapeHtml(item)}<span class="tag-remove" onclick="event.stopPropagation(); (${onRemove.toString()})(${i})">x</span></span>`
+        `<span class="tag bg-accent/15 text-accent dark:text-green-300 border border-accent/30">${escapeHtml(item)}<span class="tag-remove" onclick="event.stopPropagation(); (${onRemove.toString()})(${i})">x</span></span>`
     ).join('');
 }
 
 function addCompetitorFromInput() {
     const input = document.getElementById('addCompetitorInput');
     const name = input.value.trim();
-    if (!name) return;
+    if (!name) {
+        input.focus();
+        input.placeholder = 'Please type a competitor name first...';
+        return;
+    }
     settingsBrands.competitors.push({ name: name, aliases: [name] });
     input.value = '';
+    input.placeholder = 'Type a new competitor name and press Enter to add';
     renderSettings();
-    // Auto-expand the newly added competitor
-    const idx = settingsBrands.competitors.length - 1;
-    toggleCompetitor(idx);
-}
-
-function toggleCompetitor(i) {
-    const detail = document.querySelector(`.comp-detail-${i}`);
-    const chevron = document.querySelector(`.comp-chevron-${i}`);
-    if (detail) {
-        detail.classList.toggle('hidden');
-        chevron.style.transform = detail.classList.contains('hidden') ? '' : 'rotate(90deg)';
-    }
 }
 
 function removeCompetitor(i) {
@@ -651,10 +1022,7 @@ async function saveSettings() {
     const status = document.getElementById('saveStatus');
     status.textContent = 'Saving...';
 
-    // Update target name from input
     settingsBrands.target.name = document.getElementById('settingsTargetName').value.trim();
-
-    // Update category
     settingsTemplates.placeholders.category = document.getElementById('settingsCategory').value.trim();
 
     try {
@@ -671,21 +1039,40 @@ async function saveSettings() {
             }),
         ]);
         status.textContent = 'Saved successfully!';
-        status.className = 'text-sm text-emerald-600 dark:text-emerald-400';
+        status.className = 'text-base text-accent';
         setTimeout(() => { status.textContent = ''; }, 3000);
     } catch (e) {
         status.textContent = 'Error saving: ' + e.message;
-        status.className = 'text-sm text-rose-500';
+        status.className = 'text-base text-rose-500';
     }
 }
 </script>
 
 <style>
     .card {
-        @apply bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800;
+        @apply bg-card-light dark:bg-card-dark rounded-xl border border-border-light dark:border-border-dark;
     }
     .input-field {
-        @apply border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none;
+        border: 1px solid;
+        border-color: #e5e0d8;
+        border-radius: 0.5rem;
+        padding: 0.625rem 1rem;
+        background-color: #f5f3f0;
+        color: #1a1a1a;
+        outline: none;
+    }
+    .input-field:focus {
+        border-color: #3da34f;
+        box-shadow: 0 0 0 2px rgba(61, 163, 79, 0.3);
+    }
+    .dark .input-field {
+        background-color: #353533;
+        border-color: #3d3d3a;
+        color: #e5e5e5;
+    }
+    .dark .input-field:focus {
+        border-color: #4dba5e;
+        box-shadow: 0 0 0 2px rgba(77, 186, 94, 0.3);
     }
 </style>
 

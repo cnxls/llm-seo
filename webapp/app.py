@@ -85,7 +85,7 @@ async def stop_run():
     return {"status": "stopping"}
 
 
-@app.post("/api/queries/preview")
+@app.get("/api/queries/preview")
 async def preview_queries():
     queries = generate_all_queries()
     return {"queries": queries, "total": len(queries)}
