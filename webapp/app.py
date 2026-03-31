@@ -1,10 +1,16 @@
+import asyncio
+import json as json_module
+
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pathlib import Path
 from pydantic import BaseModel
+from typing import Optional
 
 from . import data_loader
+from . import run_manager
+from src.queries_generator import generate_all_queries
 
 app = FastAPI(title="LLM SEO Monitor")
 
@@ -19,6 +25,20 @@ class TemplatesUpdate(BaseModel):
     placeholders: dict
     templates: dict
 
+
+class RunStart(BaseModel):
+    query_ids: Optional[list] = None
+
+
+class ConfigSave(BaseModel):
+    name: str
+    brands: dict
+    templates: dict
+
+
+class ConfigDelete(BaseModel):
+    name: str
+
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
@@ -31,6 +51,44 @@ async def index(request: Request):
 @app.get("/api/runs")
 async def get_runs():
     return data_loader.list_runs()
+
+
+@app.post("/api/runs/start")
+async def start_run(data: RunStart = RunStart()):
+    if run_manager.active_run["running"]:
+        return JSONResponse({"error": "A run is already active"}, status_code=409)
+    asyncio.create_task(run_manager.execute_run(data.query_ids))
+    return {"status": "started"}
+
+
+@app.get("/api/runs/active")
+async def active_run_stream():
+    async def event_generator():
+        started = False
+        while True:
+            state = run_manager.active_run
+            data = json_module.dumps(state)
+            yield f"data: {data}\n\n"
+            if state["running"]:
+                started = True
+            if started and not state["running"]:
+                break
+            await asyncio.sleep(1)
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@app.post("/api/runs/stop")
+async def stop_run():
+    if not run_manager.active_run["running"]:
+        return JSONResponse({"error": "No active run"}, status_code=404)
+    run_manager.active_run["cancel_requested"] = True
+    return {"status": "stopping"}
+
+
+@app.post("/api/queries/preview")
+async def preview_queries():
+    queries = generate_all_queries()
+    return {"queries": queries, "total": len(queries)}
 
 
 @app.get("/api/brands")
@@ -88,6 +146,31 @@ async def get_templates():
 @app.put("/api/templates")
 async def update_templates(data: TemplatesUpdate):
     data_loader.save_templates(data.model_dump())
+    return {"status": "ok"}
+
+
+@app.get("/api/configs")
+async def list_configs():
+    return data_loader.list_configs()
+
+
+@app.get("/api/configs/{name}")
+async def get_config(name: str):
+    config = data_loader.load_config_by_name(name)
+    if not config:
+        return JSONResponse({"error": "Config not found"}, status_code=404)
+    return config
+
+
+@app.post("/api/configs")
+async def save_config(data: ConfigSave):
+    data_loader.save_config(data.name, data.brands, data.templates)
+    return {"status": "ok"}
+
+
+@app.delete("/api/configs/{name}")
+async def delete_config(name: str):
+    data_loader.delete_config(name)
     return {"status": "ok"}
 
 
