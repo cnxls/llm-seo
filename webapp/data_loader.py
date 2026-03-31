@@ -17,6 +17,8 @@ def list_runs():
         if not d.is_dir():
             continue
         output_files = list(d.glob("output_*.json"))
+        if len(output_files) == 0:
+            continue
         runs.append({
             "name": d.name,
             "query_count": len(output_files),
@@ -29,7 +31,7 @@ def list_runs():
 
 def load_brands():
     path = ENTRIES_DIR / "brands.json"
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     target = data["target"]
@@ -46,7 +48,7 @@ def load_queries():
     path = ENTRIES_DIR / "queries.json"
     if not path.exists():
         return []
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     return data.get("queries", [])
 
@@ -55,7 +57,7 @@ def load_raw_responses(run_name):
     run_path = RESULTS_DIR / run_name
     responses = []
     for f in sorted(run_path.glob("output_*.json")):
-        with open(f, "r") as fh:
+        with open(f, "r", encoding="utf-8") as fh:
             responses.append(json.load(fh))
     return responses
 
@@ -273,26 +275,78 @@ def load_templates():
     path = ENTRIES_DIR / "query_template.json"
     if not path.exists():
         return {}
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
 def save_brands(data):
     path = ENTRIES_DIR / "brands.json"
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
 
 def save_templates(data):
     path = ENTRIES_DIR / "query_template.json"
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
 
 def load_brands_raw():
     path = ENTRIES_DIR / "brands.json"
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+CONFIGS_PATH = ENTRIES_DIR / "saved_configs.json"
+
+
+def list_configs():
+    if not CONFIGS_PATH.exists():
+        return []
+    with open(CONFIGS_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return [{"name": c["name"], "created": c.get("created", "")} for c in data]
+
+
+def load_config_by_name(name):
+    if not CONFIGS_PATH.exists():
+        return None
+    with open(CONFIGS_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    for c in data:
+        if c["name"] == name:
+            return c
+    return None
+
+
+def save_config(name, brands, templates):
+    from datetime import datetime
+    configs = []
+    if CONFIGS_PATH.exists():
+        with open(CONFIGS_PATH, "r", encoding="utf-8") as f:
+            configs = json.load(f)
+
+    # Replace if same name exists
+    configs = [c for c in configs if c["name"] != name]
+    configs.append({
+        "name": name,
+        "created": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "brands": brands,
+        "templates": templates,
+    })
+
+    with open(CONFIGS_PATH, "w", encoding="utf-8") as f:
+        json.dump(configs, f, indent=2, ensure_ascii=False)
+
+
+def delete_config(name):
+    if not CONFIGS_PATH.exists():
+        return
+    with open(CONFIGS_PATH, "r", encoding="utf-8") as f:
+        configs = json.load(f)
+    configs = [c for c in configs if c["name"] != name]
+    with open(CONFIGS_PATH, "w", encoding="utf-8") as f:
+        json.dump(configs, f, indent=2, ensure_ascii=False)
 
 
 def get_query_details(analysis, run_name):
