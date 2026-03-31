@@ -140,7 +140,7 @@ def generate_summary(run_dir):
 
     for filename in os.listdir(run_dir):
         if filename.startswith("output_") and filename.endswith(".json"):
-            with open(os.path.join(run_dir,filename),'r') as file:
+            with open(os.path.join(run_dir,filename),'r', encoding='utf-8') as file:
                 data = json.load(file)
                 results.append(data)
     
