@@ -44,13 +44,12 @@ async def execute_run(query_ids=None):
             
             output = QueryOutput(query['id'], query['query'], query['category'], responses)
             output_path = os.path.join(run_dir, f"output_{query['id']}.json")
-            with open(output_path, "w") as f:
-                json.dump(output.to_dict(), f, indent = 4)
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(output.to_dict(), f, indent=4, ensure_ascii=False)
 
             active_run['completed'] += 1
 
-        active_run['running'] = False
-
+        active_run['current_query'] = 'Analyzing results...'
         generate_summary(run_dir=run_dir)
         answers = load_answers(run_name)
         analyzer = MentionsAnalyzer()
@@ -58,8 +57,8 @@ async def execute_run(query_ids=None):
         save_analysis(results, run_name)
 
     except Exception as e:
-        active_run['error'] = e
-    
+        active_run['error'] = str(e)
+
     finally:
         active_run['running'] = False
         active_run["cancel_requested"] = False
