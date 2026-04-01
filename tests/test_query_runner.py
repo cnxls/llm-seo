@@ -6,7 +6,7 @@ from src.query_runner import QueryRunner, QueryOutput
 class TestQueryOutput:
 
     def test_to_dict_returns_correct_structure(self):
-        output = QueryOutput(5, "Test?", {"openai": "answer", "anthropic": "response"})
+        output = QueryOutput(5, "Test?", "category?", {"openai": "answer", "anthropic": "response"})
         result = output.to_dict()
 
         assert result == {'id': 5, 'question': "Test?", 'response': {"openai": "answer", "anthropic": "response"}}
