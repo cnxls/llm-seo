@@ -34,13 +34,7 @@ This tool helps you:
 ```bash
 git clone https://github.com/cnxls/llm-seo
 cd llm-seo
-
-python -m venv .venv
-
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # Mac/Linux
-
-pip install .
+poetry install
 ```
 
 ### 2. Add API keys
@@ -115,7 +109,7 @@ For more options (limit, resume, specific IDs), run the module directly:
 ```bash
 poetry run python -m src.query_runner --limit 5    # first 5 only
 poetry run python -m src.query_runner --ids 1,5,10 # specific IDs
-poetry run python -m src.query_runner --resume data/results/run_2024-01-28_14-30-00
+poetry run python -m src.query_runner --resume data/results/run_2026-03-30_14-30-00
 ```
 
 ### Step 4: Analyze mentions
@@ -125,6 +119,20 @@ poetry run python -m src.cli analyze
 ```
 
 Analyzes the most recent run, saves `analysis.json`, and prints a summary of brand mentions.
+
+## Web dashboard
+
+There's a web UI for configuring brands, running queries, and viewing results:
+
+```bash
+poetry run uvicorn webapp.app:app --reload
+```
+
+Open `http://localhost:8000` in your browser. From there you can:
+- Set up your brand and competitors
+- Run queries and watch progress in real time
+- View mention stats, provider comparison charts, and per-query breakdowns
+- Save and load configurations for different analyses
 
 ## Running tests
 
