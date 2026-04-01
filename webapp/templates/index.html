@@ -441,7 +441,7 @@ async function loadRun(runName) {
 }
 
 function renderStats(summary, providers) {
-    document.getElementById('statQueries').textContent = summary.brands.reduce((a, b) => a + b.found_in, 0);
+    document.getElementById('statQueries').textContent = summary.total_queries;
     document.getElementById('statProviders').textContent = providers.providers.length;
 }
 

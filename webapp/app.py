@@ -103,7 +103,7 @@ async def get_summary(run_name: str):
     return {
         "brands": data_loader.get_brand_summary(analysis),
         "target": brands["target"],
-        "total_results": len(analysis),
+        "total_queries": len(set(r["question_id"] for r in analysis)),
     }
 
 
