@@ -62,3 +62,7 @@ class TestBrandDetection:
             "Notion": ["Notion"],
             "Roam Research": ["Roam Research", "Roam"]
         }
+        
+        mentions = MentionsAnalyzer.detect_mentions(text, "Obsidian", target, competitors)
+        comp_mention = next((m for m in mentions if m['brand'] == "Notion"), None)
+        assert comp_mention['count'] > 0

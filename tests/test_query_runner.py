@@ -9,7 +9,7 @@ class TestQueryOutput:
         output = QueryOutput(5, "Test?", "category?", {"openai": "answer", "anthropic": "response"})
         result = output.to_dict()
 
-        assert result == {'id': 5, 'question': "Test?", 'response': {"openai": "answer", "anthropic": "response"}}
+        assert result == {'id': 5, 'question': "Test?", 'category': "category?", 'response': {"openai": "answer", "anthropic": "response"}}
 
 
 class TestLoadQueries:
