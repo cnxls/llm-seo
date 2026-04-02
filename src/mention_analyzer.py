@@ -33,9 +33,11 @@ def load_answers(run_dir=None):
         all_dirs = os.listdir(base_path)
         all_dirs = [d for d in all_dirs if os.path.isdir(os.path.join(base_path, d))]
         all_dirs.sort(key=lambda d: os.path.getmtime(os.path.join(base_path, d)), reverse=True)
-        run_dir = all_dirs[0]
         if not all_dirs:
             raise FileNotFoundError("No runs found in data/results. Run query first.")
+        else:
+            run_dir = all_dirs[0]
+        
 
     run_path = os.path.join(base_path, run_dir)
 
@@ -184,10 +186,11 @@ def save_analysis(results, run_dir=None):
         all_dirs = os.listdir(base_path)
         all_dirs = [d for d in all_dirs if os.path.isdir(os.path.join(base_path, d))]
         all_dirs.sort(key=lambda d: os.path.getmtime(os.path.join(base_path, d)), reverse=True)
-        run_dir = all_dirs[0]
         if not all_dirs:
             raise FileNotFoundError("No runs found in data/results. Run query first.")
-
+        else:
+            run_dir = all_dirs[0]
+            
     output_path = os.path.join(base_path, run_dir, 'analysis.json')
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(results, f, indent=4)
