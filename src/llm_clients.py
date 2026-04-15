@@ -26,29 +26,33 @@ class APIKeyMissingError(LLMClientError):
 class ProviderNotFoundError(LLMClientError):
     pass
 
-def build_client(name: Optional[str] = None) -> Optional[Tuple[str, Any]]:
+_clients = {}
+
+def build_client(provider_name: Optional[str] = None) -> Optional[Tuple[str, Any]]:
     
-    provider_name = name
     
     if not provider_name:
         logger.error("No provider name provided")
         return None
     
+    if provider_name in _clients:
+          return _clients[provider_name]
+
     try:
         if provider_name == "openai":
             api_key = load_api_key("openai")
             logger.info("Building OpenAI client")
-            return "openai", AsyncOpenAI(api_key=api_key)
+            result = ("openai", AsyncOpenAI(api_key=api_key))
         
         elif provider_name == "anthropic":
             api_key = load_api_key("anthropic")
             logger.info("Building Anthropic client")
-            return "anthropic", AsyncAnthropic(api_key=api_key)
+            result = ("anthropic", AsyncAnthropic(api_key=api_key))
         
         elif provider_name == "google":
             api_key = load_api_key("google")
             logger.info("Building Google Gemini client")
-            return "google", genai.Client(api_key=api_key).aio
+            result = ("google", genai.Client(api_key=api_key).aio)
         
         else:
             raise ProviderNotFoundError(f"Provider '{provider_name}' is not supported")
@@ -59,6 +63,9 @@ def build_client(name: Optional[str] = None) -> Optional[Tuple[str, Any]]:
     except Exception as e:
         logger.error(f"Error building client for {provider_name}: {e}")
         raise
+
+    _clients[provider_name] = result
+    return result
 
 
 async def call_with_retry(
