@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "category": "note-taking-apps",
+    "category": "generic",
     "version": "1.0"
   },
   "placeholders": {
@@ -9,28 +9,79 @@
   },
   "templates": {
     "recommendation": [
-      "What are the best {category} apps?",
-      "What {category} tool should I use for {use_case}?",
-      "Best {category} app in 2024"
+      "What are the best options for {category}?",
+      "What should I use for {use_case}?",
+      "Best {category} in 2024",
+      "Top picks for {use_case}",
+      "What do most people recommend for {category}?",
+      "Most popular options for {category}",
+      "What's trending in {category} right now?",
+      "Give me a shortlist of {category} worth trying",
+      "What do experts suggest for {use_case}?",
+      "Highest rated {category} this year"
     ],
     "comparison": [
-      "{brand1} vs {brand2} which is better?",
-      "Compare {brand1} and {brand2} for {use_case}",
-      "{brand1} or {brand2} for {use_case}?"
+      "What are the top choices for {category} compared?",
+      "Which options are most popular for {use_case}?",
+      "What are the leading alternatives in {category}?",
+      "Most recommended options for {use_case}",
+      "How do the main {category} options differ?",
+      "What are the pros and cons of popular {category}?",
+      "Which {category} stands out from the rest?",
+      "Compare the main players in {category}",
+      "What separates the best {category} from average ones?"
     ],
     "problem_solving": [
       "{competitor} is too expensive, what are alternatives?",
-      "I need a {category} app that works offline",
-      "Looking for a free alternative to {competitor}"
+      "Looking for a free alternative to {competitor}",
+      "What's a good replacement for {competitor} for {use_case}?",
+      "Which {category} option has the best free tier?",
+      "Cheaper alternatives to {competitor}",
+      "I'm not happy with {competitor}, what else should I try?",
+      "What should I switch to from {competitor}?",
+      "Open-source alternatives to {competitor}",
+      "Is there something better than {competitor} for {use_case}?",
+      "Lightweight alternatives to {competitor}"
     ],
-    "brand_specific": [
-      "Is {target} good for beginners?",
-      "What are the pros and cons of {target}?",
-      "Why should I use {target}?"
+    "feature_based": [
+      "What is the best {category} for beginners?",
+      "Which {category} option is best for {use_case} on a budget?",
+      "Most reliable choice for {category}",
+      "Best {category} for professional use",
+      "Which {category} offers the best value?",
+      "Best {category} for small teams",
+      "Which {category} has the best user experience?",
+      "Most secure {category} for {use_case}",
+      "Best {category} with a generous free plan",
+      "Which {category} works best offline?",
+      "Best {category} for long-term use"
     ],
     "how_to": [
-      "How to build a second brain with {category} apps?",
-      "How to organize notes in {target}?"
+      "How do I choose the right option for {category}?",
+      "How to get started with {category}?",
+      "What should I look for when picking {category}?",
+      "Tips for selecting {category} for {use_case}",
+      "What questions should I ask before choosing {category}?",
+      "How to evaluate {category} options?",
+      "Beginner's guide to picking {category}",
+      "Common mistakes when choosing {category}"
+    ],
+    "audience_specific": [
+      "Best {category} for students",
+      "Best {category} for freelancers",
+      "What {category} do professionals use for {use_case}?",
+      "Recommended {category} for beginners in {use_case}",
+      "What {category} is best for advanced users?",
+      "Best {category} for remote workers",
+      "Which {category} suits small businesses best?"
+    ],
+    "opinion": [
+      "What's the most underrated option in {category}?",
+      "What's the most overrated {category} right now?",
+      "Which {category} has the best reputation?",
+      "What do power users prefer for {use_case}?",
+      "Which {category} gets the most praise online?",
+      "Hidden gems in {category} worth trying"
     ]
   }
 }
