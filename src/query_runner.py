@@ -68,10 +68,48 @@ class QueryRunner:
         
         return result
 
+  
+    @staticmethod
+    async def process_one(semaphore, run_dir, query, counter, total, mode = "all"):
+
+        async with semaphore: 
+            query_id = query['id']
+            question = query['query']
+            category = query['category']
+            
+            if mode == "all":
+                responses = await ask_all_providers(question)
+            else:
+                responses = {mode: await ask_provider(mode, question)}
+            
+            
+            output = QueryOutput(query_id, question, category, responses)
+            
+            
+            output_path = os.path.join(run_dir, f'output_{query_id}.json')
+            try:
+                with open(output_path, 'w', encoding='utf-8') as outfile:
+                    json.dump(output.to_dict(), outfile, indent=4)
+
+                counter[0] += 1
+                print(f"[{counter[0]}/{total}] Query {query_id} saved to {output_path}")
+            
+            except FileNotFoundError:
+                print(f"File {output_path} not found.")
+                return
+            
+            except json.JSONDecodeError:
+                print(f"Error decoding JSON from file {output_path}.")
+                return
+            
+            except PermissionError:
+                print(f"Permission denied reading file: {output_path}")
+                return
 
     @staticmethod
     async def run_queries(data, start=None, limit=None, ids=None, resume_dir=None, mode="all"):
 
+        sem = aio.Semaphore(5)
         output_dir = f'data/results'
 
         if resume_dir:
@@ -97,41 +135,11 @@ class QueryRunner:
             print(f"Resuming: {len(completed)} done, {len(queries)} remaining")
 
         total = len(queries)
+        counter = [0]
 
-        for i, query in enumerate(queries, 1):
-            print(f"Processing query {i}/{total} (ID: {query['id']})")
-            query_id = query['id']
-            question = query['query']
-            category = query['category']
-            
-            if mode == "all":
-                responses = await ask_all_providers(question)
-            else:
-                responses = {mode: await ask_provider(mode, question)}
-            
-            
-            output = QueryOutput(query_id, question, category, responses)
-            
-            
-            output_path = os.path.join(run_dir, f'output_{query_id}.json')
-            try:
-                with open(output_path, 'w', encoding='utf-8') as outfile:
-                    json.dump(output.to_dict(), outfile, indent=4)
-                
-                print(f"Query {query_id} saved to {output_path}")
-            
-            except FileNotFoundError:
-                print(f"File {output_path} not found.")
-                continue
-            
-            except json.JSONDecodeError:
-                print(f"Error decoding JSON from file {output_path}.")
-                continue
-            
-            except PermissionError:
-                print(f"Permission denied reading file: {output_path}")
-                continue
+        tasks = [QueryRunner.process_one(semaphore=sem, query = query, run_dir=run_dir, counter=counter, total=total) for query in queries]
 
+        await aio.gather(*tasks)
         generate_summary(run_dir)
 
 def generate_summary(run_dir):
