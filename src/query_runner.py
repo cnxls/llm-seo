@@ -97,11 +97,7 @@ class QueryRunner:
             except FileNotFoundError:
                 print(f"File {output_path} not found.")
                 return
-            
-            except json.JSONDecodeError:
-                print(f"Error decoding JSON from file {output_path}.")
-                return
-            
+
             except PermissionError:
                 print(f"Permission denied reading file: {output_path}")
                 return
@@ -137,7 +133,7 @@ class QueryRunner:
         total = len(queries)
         counter = [0]
 
-        tasks = [QueryRunner.process_one(semaphore=sem, query = query, run_dir=run_dir, counter=counter, total=total) for query in queries]
+        tasks = [QueryRunner.process_one(semaphore=sem, query = query, run_dir=run_dir, counter=counter, total=total, mode=mode) for query in queries]
 
         await aio.gather(*tasks)
         generate_summary(run_dir)
