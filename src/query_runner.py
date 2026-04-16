@@ -106,7 +106,7 @@ class QueryRunner:
     async def run_queries(data, start=None, limit=None, ids=None, resume_dir=None, mode="all"):
 
         sem = aio.Semaphore(5)
-        output_dir = f'data/results'
+        output_dir = 'data/results'
 
         if resume_dir:
             run_dir = resume_dir
@@ -171,7 +171,8 @@ def parse_args():
     parser.add_argument("--limit", type=int, help="Maximum number of queries to run")
     parser.add_argument("--ids", type=str, help="Comma-separated query IDs: 1,5,10")
     parser.add_argument("--resume", type=str, help="Path to existing run directory to resume")
-    
+    parser.add_argument("--mode", type=str, default="all", choices=["all", "openai", "anthropic", "google"], help="Which provider(s) to query")
+
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -180,4 +181,4 @@ if __name__ == "__main__":
         args.ids = {int(x) for x in args.ids.split(',')}
     print(f"start={args.start}, limit={args.limit}, ids={args.ids}, resume={args.resume}")
     data = QueryRunner.load_queries()
-    aio.run(QueryRunner.run_queries(data, args.start, args.limit, args.ids, args.resume))
+    aio.run(QueryRunner.run_queries(data, args.start, args.limit, args.ids, args.resume, args.mode))
