@@ -30,13 +30,13 @@ class QueryRunner:
                 queries = json.load(file)
             return queries
         except FileNotFoundError:
-            print(f"File data/entries/queries.json not found.")
+            print("File data/entries/queries.json not found.")
             return {'queries': []}
         except json.JSONDecodeError:
-            print(f"Error decoding JSON from file data/entries/queries.json.")
+            print("Error decoding JSON from file data/entries/queries.json.")
             return {'queries': []}
         except PermissionError:
-            print(f"Permission denied reading file: data/entries/queries.json")
+            print("Permission denied reading file: data/entries/queries.json")
             return {'queries': []}
         
     @staticmethod
@@ -70,7 +70,7 @@ class QueryRunner:
 
   
     @staticmethod
-    async def process_one(semaphore, run_dir, query, counter, total, mode = "all"):
+    async def process_one(semaphore, run_dir, query, counter, total, mode="all"):
 
         async with semaphore: 
             query_id = query['id']
@@ -133,7 +133,7 @@ class QueryRunner:
         total = len(queries)
         counter = [0]
 
-        tasks = [QueryRunner.process_one(semaphore=sem, query = query, run_dir=run_dir, counter=counter, total=total, mode=mode) for query in queries]
+        tasks = [QueryRunner.process_one(semaphore=sem, query=query, run_dir=run_dir, counter=counter, total=total, mode=mode) for query in queries]
 
         await aio.gather(*tasks)
         generate_summary(run_dir)
@@ -157,7 +157,7 @@ def generate_summary(run_dir):
         "results": results
     }
 
-    output_path = os.path.join(run_dir, f'summary.json')
+    output_path = os.path.join(run_dir, 'summary.json')
     with open(output_path, 'w', encoding='utf-8') as outfile:
         json.dump(summary , outfile, indent=4)
     
