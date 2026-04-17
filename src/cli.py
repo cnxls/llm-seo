@@ -27,10 +27,10 @@ def main():
         aio.run(QueryRunner.run_queries(data))
         
     elif args.command == "analyze":
-        from .mention_analyzer import print_query_results,load_answers, MentionsAnalyzer, save_analysis, print_summary
+        from .mention_analyzer import print_query_results, load_answers, MentionsAnalyzer, save_analysis, print_summary
         responses = load_answers()
         analyzer = MentionsAnalyzer()
-        results =  analyzer.mention_analyzer(responses)
+        results = analyzer.mention_analyzer(responses)
         save_analysis(results)
         print_summary(results)
         print_query_results(results)
