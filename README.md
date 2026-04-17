@@ -110,6 +110,7 @@ For more options (limit, resume, specific IDs), run the module directly:
 poetry run python -m src.query_runner --limit 5    # first 5 only
 poetry run python -m src.query_runner --ids 1,5,10 # specific IDs
 poetry run python -m src.query_runner --resume data/results/run_2026-03-30_14-30-00
+poetry run python -m src.query_runner --mode openai # only query one provider (all|openai|anthropic|google)
 ```
 
 ### Step 4: Analyze mentions
