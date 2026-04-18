@@ -34,7 +34,7 @@ def load_templates() -> Dict:
 def load_brands():
     competitors = {}
     try:
-        with open(f'data/entries/brands.json', 'r', encoding='utf-8') as file:
+        with open(BRANDS_PATH, 'r', encoding='utf-8') as file:
             brands = json.load(file)
             target = brands['target']['aliases']
             for brand in brands['competitors']:
