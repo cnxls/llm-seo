@@ -1,7 +1,7 @@
 import asyncio
 import json as json_module
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import JSONResponse, StreamingResponse
 from pathlib import Path
@@ -96,6 +96,36 @@ async def get_brands():
     return data_loader.load_brands()
 
 
+@app.get("/api/runs/compare")
+async def compare_runs(run_a: str = Query(...), run_b: str = Query(...)):
+    analysis_a = data_loader.load_analysis(run_a)
+    analysis_b = data_loader.load_analysis(run_b)
+    brands = data_loader.load_brands()
+    target = brands["target"]
+    return {
+        "run_a": {
+            "name": run_a,
+            "summary": {
+                "brands": data_loader.get_brand_summary(analysis_a),
+                "target": target,
+                "total_queries": len(set(r["question_id"] for r in analysis_a)),
+            },
+            "providers": data_loader.get_provider_comparison(analysis_a, target),
+            "categories": data_loader.get_category_performance(analysis_a, target),
+        },
+        "run_b": {
+            "name": run_b,
+            "summary": {
+                "brands": data_loader.get_brand_summary(analysis_b),
+                "target": target,
+                "total_queries": len(set(r["question_id"] for r in analysis_b)),
+            },
+            "providers": data_loader.get_provider_comparison(analysis_b, target),
+            "categories": data_loader.get_category_performance(analysis_b, target),
+        },
+    }
+
+
 @app.get("/api/runs/{run_name}/summary")
 async def get_summary(run_name: str):
     analysis = data_loader.load_analysis(run_name)
@@ -125,6 +155,15 @@ async def get_categories(run_name: str):
 async def get_queries(run_name: str):
     analysis = data_loader.load_analysis(run_name)
     return data_loader.get_query_details(analysis, run_name)
+
+
+@app.get("/api/runs/{run_name}/queries/{query_id}/raw")
+async def get_query_raw(run_name: str, query_id: int):
+    raw = data_loader.load_raw_responses(run_name)
+    entry = next((r for r in raw if r["id"] == query_id), None)
+    if not entry:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    return entry
 
 
 @app.get("/api/brands/raw")
