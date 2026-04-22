@@ -1,0 +1,16 @@
+{
+  "target": {
+    "name": "TestApp",
+    "aliases": ["TestApp", "TestApp.io"]
+  },
+  "competitors": [
+    {
+      "name": "CompetitorA",
+      "aliases": ["CompetitorA"]
+    },
+    {
+      "name": "CompetitorB",
+      "aliases": ["CompetitorB", "CompB"]
+    }
+  ]
+}

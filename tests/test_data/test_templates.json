@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "category": "test-category",
+    "version": "1.0"
+  },
+  "placeholders": {
+    "category": "testing",
+    "use_cases": ["unit tests", "integration tests"]
+  },
+  "templates": {
+    "recommendation": [
+      "What are the best {category} tools?"
+    ],
+    "comparison": [
+      "{brand1} vs {brand2} which is better?",
+      "Compare {brand1} and {brand2} for {use_case}"
+    ],
+    "brand_specific": [
+      "Is {target} good for beginners?"
+    ]
+  }
+}
