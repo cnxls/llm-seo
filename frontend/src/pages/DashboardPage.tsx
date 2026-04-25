@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Target, Trophy, Search, TrendingUp, ChevronRight, Download, Check } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { Target, Trophy, Search, TrendingUp, ChevronRight, Check } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { api } from '../api';
 import { RunSummaryData, RunSummary, ProvidersData, QueryData } from '../types';
+import StatCard from '../components/dashboard/StatCard';
+import Podium from '../components/dashboard/Podium';
+import Leaderboard from '../components/dashboard/Leaderboard';
+import ProviderPanel from '../components/dashboard/ProviderPanel';
 
 export default function DashboardPage({ onOpenCompare }: { onOpenCompare: () => void }) {
   const [runs, setRuns] = useState<RunSummaryData[]>([]);
@@ -78,95 +81,59 @@ export default function DashboardPage({ onOpenCompare }: { onOpenCompare: () => 
 
       {/* Hero stat row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Win rate", icon: Trophy, value: `${winRate}%` },
-          { label: "Mentions", icon: Target, value: target?.mentions ?? 0 },
-          { label: "Queries", icon: Search, value: summary.total_queries },
-          { label: "Rank", icon: TrendingUp, value: `#${targetRank}`, unit: `of ${summary.brands.length}` },
-        ].map((stat, i) => (
-          <div key={i} className="bg-card border border-border rounded-xl p-5 relative overflow-hidden shadow-sm">
-            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-              <stat.icon size={14} className="text-muted-foreground" /> {stat.label}
-            </div>
-            <div className="text-3xl font-bold text-foreground flex items-baseline gap-2">
-              {stat.value}
-              {'unit' in stat && <span className="text-sm font-normal text-muted-foreground">{stat.unit}</span>}
-            </div>
-          </div>
-        ))}
+        <StatCard
+          label="Win rate"
+          icon={Trophy}
+          value={winRate}
+          suffix="%"
+          accent
+        />
+        <StatCard
+          label="Mentions"
+          icon={Target}
+          value={target?.mentions ?? 0}
+        />
+        <StatCard
+          label="Queries"
+          icon={Search}
+          value={summary.total_queries}
+        />
+        <StatCard
+          label="Rank"
+          icon={TrendingUp}
+          value={targetRank}
+          format={(v) => `#${Math.round(v)}`}
+          suffix={` of ${summary.brands.length}`}
+        />
       </div>
 
-      {/* Brand rankings + Provider chart */}
+      {/* Podium + Brand rankings */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold flex items-center gap-2"><Trophy size={16} className="text-accent" /> Brand leaderboard</h2>
-              <p className="text-xs text-muted-foreground mt-1">How often each brand is mentioned. Your brand is highlighted.</p>
-            </div>
-            <Button variant="ghost" size="sm" className="hidden sm:flex"><Download size={14} className="mr-1" /> Export</Button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted/50 text-muted-foreground uppercase text-[11px] font-semibold tracking-wider">
-                <tr>
-                  <th className="px-5 py-3 w-8 text-center">#</th>
-                  <th className="px-5 py-3">Brand</th>
-                  <th className="px-5 py-3 w-1/3">Mention share</th>
-                  <th className="px-5 py-3 text-right">Mentions</th>
-                  <th className="px-5 py-3 text-right">Wins</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {summary.brands.map((b, i) => {
-                  const maxMentions = summary.brands[0].mentions;
-                  const pct = (b.mentions / maxMentions) * 100;
-                  return (
-                    <tr key={b.brand} className={`hover:bg-muted/20 transition-colors ${b.is_target ? 'bg-accent/5 font-medium' : ''}`}>
-                      <td className="px-5 py-3 text-center text-muted-foreground">{i + 1}</td>
-                      <td className="px-5 py-3 text-foreground whitespace-nowrap">
-                        {b.brand} {b.is_target && <span className="ml-2 text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">You</span>}
-                      </td>
-                      <td className="px-5 py-3">
-                        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${b.is_target ? 'bg-accent' : 'bg-foreground/30'}`} style={{ width: `${pct}%` }} />
-                        </div>
-                      </td>
-                      <td className="px-5 py-3 text-right tabular-nums">{b.mentions}</td>
-                      <td className="px-5 py-3 text-right tabular-nums text-foreground/70">
-                        {b.wins > 0 ? <span className={b.is_target ? "text-accent font-semibold" : ""}>{b.wins}</span> : "0"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          <Podium brands={[...summary.brands].sort((a, b) => b.mentions - a.mentions)} />
+          
+          <Leaderboard 
+            brands={[...summary.brands].sort((a, b) => b.mentions - a.mentions)} 
+            onOpenCompare={onOpenCompare}
+          />
         </div>
 
         {/* By Provider */}
-        <div className="bg-card border border-border rounded-xl shadow-sm p-5 flex flex-col">
-          <div className="mb-6">
-            <h2 className="font-semibold flex items-center gap-2"><Target size={16} className="text-accent" /> By provider</h2>
-            <p className="text-xs text-muted-foreground mt-1">Your mentions across each LLM.</p>
-          </div>
-          <div className="flex-1 flex flex-col justify-center gap-4">
-            {providers.providers.map((p, i) => {
-              const bgCols: Record<string, string> = { openai: 'bg-[#10a37f]', anthropic: 'bg-[#d97757]', google: 'bg-[#4285f4]' };
-              return (
-                <div key={p} className="flex flex-col gap-2 p-3 rounded-lg border border-border bg-muted/20">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-sm font-semibold capitalize">
-                      <span className={`w-2.5 h-2.5 rounded-full ${bgCols[p] || 'bg-foreground'}`} />
-                      {p}
-                    </span>
-                    <span className="text-lg font-bold tabular-nums">{providers.mentions[i]} <span className="text-xs font-normal text-muted-foreground">mentions</span></span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <ProviderPanel 
+          providers={providers.providers.map((p, i) => {
+            const pInfo: any = {
+              openai: { label: 'OpenAI', sub: 'GPT-4o', color: '#10a37f' },
+              anthropic: { label: 'Anthropic', sub: 'Claude Sonnet', color: '#d97757' },
+              google: { label: 'Google', sub: 'Gemini 1.5 Pro', color: '#4285f4' }
+            }[p] || { label: p, sub: 'Model', color: '#666' };
+            return {
+              id: p,
+              mentions: providers.mentions[i] || 0,
+              wins: providers.wins[i] || 0,
+              ...pInfo
+            };
+          })}
+        />
       </div>
 
       {/* Query details */}
