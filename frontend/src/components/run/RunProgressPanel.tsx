@@ -5,17 +5,17 @@ import { Button } from '../ui/button';
 import { Progress } from '../ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { CheckCircle2, AlertCircle, Play, Square, ArrowRight } from 'lucide-react';
-import { Page } from '../../App';
+import { useNavigate } from 'react-router-dom';
 
 type RunState = 'IDLE' | 'ACTIVE' | 'DONE' | 'ERROR';
 
 interface RunProgressPanelProps {
   selectedIds: number[];
   totalAvailable: number;
-  onNavigate: (page: Page) => void;
 }
 
-export default function RunProgressPanel({ selectedIds, totalAvailable, onNavigate }: RunProgressPanelProps) {
+export default function RunProgressPanel({ selectedIds, totalAvailable }: RunProgressPanelProps) {
+  const navigate = useNavigate();
   const [runState, setRunState] = useState<RunState>('IDLE');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
@@ -129,7 +129,7 @@ export default function RunProgressPanel({ selectedIds, totalAvailable, onNaviga
             <h3 className="font-semibold text-lg text-foreground mb-1">Analysis Complete</h3>
             <p className="text-sm text-muted-foreground">Run name: <span className="font-mono text-foreground">{progressMsg?.run_name}</span></p>
           </div>
-          <Button className="w-full bg-accent hover:bg-accent/90 mt-2 shadow-md transition-all duration-200" onClick={() => onNavigate('dashboard')}>
+          <Button className="w-full bg-accent hover:bg-accent/90 mt-2 shadow-md transition-all duration-200" onClick={() => navigate('/dashboard')}>
             View Results
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
