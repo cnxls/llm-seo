@@ -8,13 +8,30 @@ import ConfigManager from '../components/settings/ConfigManager';
 import BrandEditor from '../components/settings/BrandEditor';
 import CompetitorEditor from '../components/settings/CompetitorEditor';
 import TemplateEditor from '../components/settings/TemplateEditor';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const brandsSchema = z.object({
+  target: z.string().min(1, "Target brand name is required"),
+  target_aliases: z.array(z.string()),
+  competitors: z.array(z.string()),
+  competitor_aliases: z.record(z.string(), z.array(z.string()))
+});
+
+type BrandsFormValues = z.infer<typeof brandsSchema>;
 
 export default function SettingsPage() {
   const [configs, setConfigs] = useState<ConfigItem[]>([]);
   
-  const [brands, setBrands] = useState<BrandsConfig>({
-    target: '', target_aliases: [], competitors: [], competitor_aliases: {}
+  const { watch, reset, handleSubmit, formState: { errors } } = useForm<BrandsFormValues>({
+    resolver: zodResolver(brandsSchema),
+    defaultValues: {
+      target: '', target_aliases: [], competitors: [], competitor_aliases: {}
+    }
   });
+
+  const brands = watch();
 
   const [templates, setTemplates] = useState<TemplatesConfig>({
     templates: {}
@@ -45,10 +62,10 @@ export default function SettingsPage() {
         api.getBrands(),
         api.getTemplates()
       ]);
-      setBrands(brandData);
+      reset(brandData);
       setTemplates(templateData);
     } catch (e: any) {
-      setError(e.message);
+      setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -58,10 +75,10 @@ export default function SettingsPage() {
     setLoading(true);
     try {
       const full = await api.getConfig(name);
-      setBrands(full.brands);
+      reset(full.brands);
       setTemplates(full.templates);
     } catch (e: any) {
-      setError(e.message);
+      setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -78,25 +95,25 @@ export default function SettingsPage() {
 
   const handleCreateConfig = async (name: string) => {
     try {
-      await api.createConfig({ name, brands, templates });
+      await api.createConfig({ name, brands: brands as BrandsConfig, templates });
       await fetchConfigs();
     } catch (e) {
       console.error(e);
     }
   };
 
-  const handleSaveAll = async () => {
+  const handleSaveAll = handleSubmit(async (data) => {
     setSaving(true);
+    setError(null);
     try {
-      await api.updateBrands(brands);
+      await api.updateBrands(data as BrandsConfig);
       await api.updateTemplates(templates);
-      // Success flash could go here
     } catch (e: any) {
-      setError(e.message);
+      setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setSaving(false);
     }
-  };
+  });
 
   if (loading && !brands.target) {
     return <div className="flex h-[400px] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>;
@@ -113,6 +130,18 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {Object.keys(errors).length > 0 && (
+        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-500 p-4 rounded-md flex items-center mb-6">
+          <AlertCircle className="w-5 h-5 mr-3" />
+          <div className="flex flex-col">
+            <span className="font-semibold">Validation Error</span>
+            <ul className="list-disc ml-5 mt-1 text-sm">
+              {errors.target && <li>{errors.target.message}</li>}
+            </ul>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-10 bg-card border border-border rounded-md shadow-md p-8">
         <ConfigManager 
           configs={configs}
@@ -124,15 +153,15 @@ export default function SettingsPage() {
         <Separator className="bg-border" />
 
         <BrandEditor 
-          brands={brands}
-          onChange={(b) => setBrands(b)}
+          brands={brands as BrandsConfig}
+          onChange={(b) => reset(b)}
         />
 
         <Separator className="bg-border" />
 
         <CompetitorEditor
-          brands={brands}
-          onChange={(b) => setBrands(b)}
+          brands={brands as BrandsConfig}
+          onChange={(b) => reset(b)}
         />
 
         <Separator className="bg-border" />
@@ -143,7 +172,6 @@ export default function SettingsPage() {
         />
       </div>
 
-      {/* Floating Save Button */}
       <div className="fixed bottom-8 right-8 z-50">
         <Button 
           size="lg" 

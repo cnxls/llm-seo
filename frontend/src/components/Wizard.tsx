@@ -2,6 +2,19 @@ import { useState } from 'react';
 import { Target, Play, TrendingUp, X, Check, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { api } from '../api';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const wizardSchema = z.object({
+  brand: z.string().min(1, "Brand name is required"),
+  aliases: z.array(z.string()),
+  competitors: z.array(z.string()),
+  category: z.string().optional(),
+  useCases: z.array(z.string()).optional(),
+});
+
+type WizardFormValues = z.infer<typeof wizardSchema>;
 
 interface WizardProps {
   initialBrand: string;
@@ -11,17 +24,27 @@ interface WizardProps {
 
 export default function Wizard({ initialBrand, onClose, onComplete }: WizardProps) {
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({
-    brand: initialBrand || "",
-    aliases: [] as string[],
-    competitors: [] as string[],
-    category: "",
-    useCases: [] as string[],
+
+  const { register, watch, setValue, trigger, formState: { errors } } = useForm<WizardFormValues>({
+    resolver: zodResolver(wizardSchema),
+    defaultValues: {
+      brand: initialBrand || "",
+      aliases: [],
+      competitors: [],
+      category: "",
+      useCases: [],
+    }
   });
 
   const [aliasInput, setAliasInput] = useState("");
   const [competitorInput, setCompetitorInput] = useState("");
   const [useCaseInput, setUseCaseInput] = useState("");
+
+  const brand = watch("brand");
+  const aliases = watch("aliases");
+  const competitors = watch("competitors");
+  const category = watch("category");
+  const useCases = watch("useCases") || [];
 
   const steps = [
     { title: "Welcome", key: "welcome" },
@@ -31,7 +54,13 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
     { title: "Ready", key: "ready" },
   ];
 
-  const next = () => setStep(s => Math.min(s + 1, steps.length - 1));
+  const next = async () => {
+    if (step === 1) {
+      const valid = await trigger("brand");
+      if (!valid) return;
+    }
+    setStep(s => Math.min(s + 1, steps.length - 1));
+  };
   const prev = () => setStep(s => Math.max(s - 1, 0));
 
   const competitorSuggestions = [
@@ -45,7 +74,7 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
   const handleAddAlias = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && aliasInput.trim()) {
       e.preventDefault();
-      setForm({ ...form, aliases: [...form.aliases, aliasInput.trim()] });
+      setValue("aliases", [...aliases, aliasInput.trim()]);
       setAliasInput("");
     }
   };
@@ -53,7 +82,7 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
   const handleAddCompetitor = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && competitorInput.trim()) {
       e.preventDefault();
-      setForm({ ...form, competitors: [...form.competitors, competitorInput.trim()] });
+      setValue("competitors", [...competitors, competitorInput.trim()]);
       setCompetitorInput("");
     }
   };
@@ -61,9 +90,22 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
   const handleAddUseCase = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && useCaseInput.trim()) {
       e.preventDefault();
-      setForm({ ...form, useCases: [...form.useCases, useCaseInput.trim()] });
+      setValue("useCases", [...useCases, useCaseInput.trim()]);
       setUseCaseInput("");
     }
+  };
+
+  const onSubmit = async () => {
+    if (brand) {
+      await api.updateBrands({
+        target: brand,
+        target_aliases: [brand, ...aliases],
+        competitors: competitors,
+        competitor_aliases: Object.fromEntries(competitors.map(c => [c, [c]])),
+      }).catch(console.error);
+    }
+    onClose();
+    onComplete();
   };
 
   return (
@@ -133,10 +175,10 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
                 <input 
                   placeholder="e.g. Obsidian" 
                   autoFocus
-                  value={form.brand} 
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, brand: e.target.value })}
+                  {...register("brand")}
                   className="flex h-10 w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
                 />
+                {errors.brand && <p className="text-xs text-destructive mt-1">{errors.brand.message}</p>}
               </div>
 
               <div className="space-y-2 pt-4">
@@ -148,10 +190,10 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
                 </label>
                 
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {form.aliases.map((a, i) => (
+                  {aliases.map((a, i) => (
                     <span key={i} className="bg-accent/15 text-accent border border-accent/30 px-3 py-1 rounded-md text-sm font-medium flex items-center gap-2">
                       {a}
-                      <X size={12} className="cursor-pointer opacity-70 hover:opacity-100" onClick={() => setForm({ ...form, aliases: form.aliases.filter((_, x) => x !== i) })}/>
+                      <X size={12} className="cursor-pointer opacity-70 hover:opacity-100" onClick={() => setValue("aliases", aliases.filter((_, x) => x !== i))}/>
                     </span>
                   ))}
                 </div>
@@ -175,7 +217,7 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
               
               <div className="grid gap-2">
                 {competitorSuggestions.map(s => {
-                  const added = form.competitors.includes(s.name);
+                  const added = competitors.includes(s.name);
                   return (
                     <label key={s.name} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${added ? 'border-accent bg-accent/10' : 'border-border bg-card'}`}>
                       <input 
@@ -183,12 +225,10 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
                         className="w-4 h-4 rounded border-border text-accent focus:ring-accent accent-accent"
                         checked={added} 
                         onChange={() => {
-                          setForm({ 
-                            ...form, 
-                            competitors: added 
-                              ? form.competitors.filter(c => c !== s.name) 
-                              : [...form.competitors, s.name] 
-                          });
+                          setValue("competitors", added 
+                            ? competitors.filter(c => c !== s.name) 
+                            : [...competitors, s.name] 
+                          );
                         }} 
                       />
                       <div className="flex-1">
@@ -222,22 +262,21 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
                 <label className="text-sm font-medium text-foreground">Your category (single word/phrase)</label>
                 <input 
                   placeholder="e.g. note-taking, project management"
-                  value={form.category} 
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, category: e.target.value })}
+                  {...register("category")}
                   className="flex h-10 w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent font-mono"
                 />
                 <p className="text-xs text-muted-foreground mt-2">
-                  We'll implicitly ask: <i>"Best {form.category || "{category}"} app?"</i>, <i>"Top {form.category || "{category}"} tools?"</i>
+                  We'll implicitly ask: <i>"Best {category || "{category}"} app?"</i>, <i>"Top {category || "{category}"} tools?"</i>
                 </p>
               </div>
 
               <div className="space-y-2 pt-4">
                 <label className="text-sm font-medium text-foreground">Who uses it? (optional use cases)</label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {form.useCases.map((u, i) => (
+                  {useCases.map((u, i) => (
                     <span key={i} className="bg-muted text-foreground border border-border px-3 py-1 rounded-md text-sm font-medium flex items-center gap-2">
                       {u}
-                      <X size={12} className="cursor-pointer text-muted-foreground hover:text-foreground" onClick={() => setForm({ ...form, useCases: form.useCases.filter((_, x) => x !== i) })}/>
+                      <X size={12} className="cursor-pointer text-muted-foreground hover:text-foreground" onClick={() => setValue("useCases", useCases.filter((_, x) => x !== i))}/>
                     </span>
                   ))}
                 </div>
@@ -249,7 +288,7 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
                   className="flex h-10 w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
                 />
                 <p className="text-xs text-muted-foreground mt-2">
-                  Creates variations like <i>"Best {form.category || "{category}"} app for students?"</i>
+                  Creates variations like <i>"Best {category || "{category}"} app for students?"</i>
                 </p>
               </div>
             </div>
@@ -261,8 +300,8 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
                 <Check size={32} className="text-accent" strokeWidth={3} />
               </div>
               <p className="text-lg text-foreground max-w-sm mb-4 leading-relaxed">
-                Ready to track <strong className="font-bold">{form.brand || "your brand"}</strong> against <strong className="font-bold">{form.competitors.length || 0} competitors</strong>
-                {form.category && <> across <strong className="font-bold">{form.category}</strong> queries</>}.
+                Ready to track <strong className="font-bold">{brand || "your brand"}</strong> against <strong className="font-bold">{competitors.length || 0} competitors</strong>
+                {category && <> across <strong className="font-bold">{category}</strong> queries</>}.
               </p>
               <p className="text-sm text-muted-foreground">
                 You'll land on your Dashboard. You can trigger a new Run anytime!
@@ -288,18 +327,7 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
               </Button>
             )}
             {step === steps.length - 1 && (
-              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={async () => {
-                if (form.brand) {
-                  await api.updateBrands({
-                    target: form.brand,
-                    target_aliases: [form.brand, ...form.aliases],
-                    competitors: form.competitors,
-                    competitor_aliases: Object.fromEntries(form.competitors.map(c => [c, [c]])),
-                  }).catch(console.error);
-                }
-                onClose();
-                onComplete();
-              }}>
+              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={onSubmit}>
                 Go to Dashboard <Play size={16} className="ml-2 fill-current" />
               </Button>
             )}
