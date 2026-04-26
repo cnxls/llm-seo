@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Target, Trophy, Search, TrendingUp, ChevronRight, Check } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { api } from '../api';
@@ -9,41 +10,40 @@ import Leaderboard from '../components/dashboard/Leaderboard';
 import ProviderPanel from '../components/dashboard/ProviderPanel';
 
 export default function DashboardPage({ onOpenCompare }: { onOpenCompare: () => void }) {
-  const [runs, setRuns] = useState<RunSummaryData[]>([]);
   const [selectedRun, setSelectedRun] = useState<string>('');
-  const [summary, setSummary] = useState<RunSummary | null>(null);
-  const [providers, setProviders] = useState<ProvidersData | null>(null);
-  const [queries, setQueries] = useState<QueryData[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const [catFilter, setCatFilter] = useState("all");
   const [providerFilter, setProviderFilter] = useState("all");
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
 
-  useEffect(() => {
-    api.getRuns().then(data => {
-      setRuns(data);
-      if (data.length > 0) setSelectedRun(data[0].name);
-      else setLoading(false);
-    }).catch(console.error);
-  }, []);
+  const { data: runs = [] } = useQuery<RunSummaryData[]>({
+    queryKey: ['runs'],
+    queryFn: () => api.getRuns(),
+  });
 
   useEffect(() => {
-    if (!selectedRun) return;
-    setLoading(true);
-    Promise.all([
-      api.getRunSummary(selectedRun),
-      api.getRunProviders(selectedRun),
-      api.getRunQueries(selectedRun),
-    ]).then(([s, p, q]) => {
-      setSummary(s);
-      setProviders(p);
-      setQueries(q);
-      setLoading(false);
-    }).catch(console.error);
-  }, [selectedRun]);
+    if (runs.length > 0 && !selectedRun) setSelectedRun(runs[0].name);
+  }, [runs]);
 
-  if (loading || !summary || !providers) {
+  const { data: summary, isLoading: loadingSummary } = useQuery<RunSummary>({
+    queryKey: ['runSummary', selectedRun],
+    queryFn: () => api.getRunSummary(selectedRun),
+    enabled: !!selectedRun,
+  });
+
+  const { data: providers } = useQuery<ProvidersData>({
+    queryKey: ['runProviders', selectedRun],
+    queryFn: () => api.getRunProviders(selectedRun),
+    enabled: !!selectedRun,
+  });
+
+  const { data: queries = [] } = useQuery<QueryData[]>({
+    queryKey: ['runQueries', selectedRun],
+    queryFn: () => api.getRunQueries(selectedRun),
+    enabled: !!selectedRun,
+  });
+
+  if (loadingSummary || !summary || !providers) {
     return <div className="p-6 text-muted-foreground">Loading...</div>;
   }
 
