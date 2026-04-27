@@ -2,6 +2,19 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { CategoriesData } from '../../types';
 import { Card, CardContent } from '../ui/card';
 
+function CustomTooltip({ active, payload }: { active?: boolean; payload?: any[] }) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-card border border-border p-3 rounded-md shadow-lg text-sm text-foreground">
+        <p className="font-semibold mb-1 text-primary">{data.name}</p>
+        <p>{`${data.winRate}% (${data.wins} wins / ${data.total} queries)`}</p>
+      </div>
+    );
+  }
+  return null;
+}
+
 export default function CategoryBarChart({ categories }: { categories: CategoriesData }) {
   if (!categories || !categories.categories.length) {
     return (
@@ -22,19 +35,6 @@ export default function CategoryBarChart({ categories }: { categories: Categorie
     if (winRate >= 60) return '#618556'; // Muted olive green
     if (winRate >= 40) return '#9e8155'; // Muted earthy amber
     return '#a15d5d'; // Muted earthy red
-  };
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-card border border-border p-3 rounded-md shadow-lg text-sm text-foreground">
-          <p className="font-semibold mb-1 text-primary">{data.name}</p>
-          <p>{`${data.winRate}% (${data.wins} wins / ${data.total} queries)`}</p>
-        </div>
-      );
-    }
-    return null;
   };
 
   return (

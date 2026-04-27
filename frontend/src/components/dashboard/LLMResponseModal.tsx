@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { api } from '../../api';
 import { QueryRawData } from '../../types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
@@ -18,23 +18,38 @@ export default function LLMResponseModal({ runName, queryId, isOpen, onClose }: 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchIdRef = useRef(0);
+
   useEffect(() => {
-    if (isOpen && queryId !== null && runName) {
+    if (!isOpen || queryId === null || !runName) return;
+
+    const id = ++fetchIdRef.current;
+
+    // Kick off fetch in a microtask so setState isn't synchronous in the effect body
+    queueMicrotask(() => {
+      if (id !== fetchIdRef.current) return;
       setLoading(true);
       setError(null);
-      api.getQueryRaw(runName, queryId)
-        .then(setData)
-        .catch(err => setError(err.message))
-        .finally(() => setLoading(false));
-    } else {
-      setData(null);
-    }
+    });
+
+    api.getQueryRaw(runName, queryId)
+      .then(res => { if (id === fetchIdRef.current) setData(res); })
+      .catch(err => { if (id === fetchIdRef.current) setError(err.message); })
+      .finally(() => { if (id === fetchIdRef.current) setLoading(false); });
+
+    return () => { fetchIdRef.current++; };
   }, [isOpen, queryId, runName]);
+
+  const handleClose = () => {
+    setData(null);
+    setError(null);
+    onClose();
+  };
 
   const providers = data ? Object.keys(data.response) : [];
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-w-4xl bg-card border-border">
         <DialogHeader>
           <DialogTitle className="text-xl pr-6 font-semibold">Raw LLM Responses</DialogTitle>
