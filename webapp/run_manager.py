@@ -18,8 +18,12 @@ active_run = {
 
 async def execute_run(query_ids=None):
     active_run["running"] = True
+    active_run["run_name"] = None
     active_run["completed"] = 0
+    active_run["total"] = 0
+    active_run["current_query"] = None
     active_run["error"] = None
+    active_run["cancel_requested"] = False
     
     try:
         generated_qs = generate_all_queries()
