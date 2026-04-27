@@ -110,7 +110,7 @@ async def ask_openai(client: AsyncOpenAI, question: str, model: str) -> Dict[str
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": question}
             ],
-            max_tokens=get_provider_config("openai").get("max_tokens", 512),
+            max_completion_tokens=get_provider_config("openai").get("max_tokens", 512),
             temperature=get_provider_config("openai").get("temperature", 0.7)
         )
         return response
