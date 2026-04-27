@@ -28,7 +28,10 @@ function Typewriter({ text, speed = 45, delay = 0, onDone }: { text: string; spe
         }
         if (prev + 1 >= text.length) {
           clearInterval(id);
-          onDoneRef.current && onDoneRef.current();
+          // Call onDone outside the setState to avoid React warnings
+          setTimeout(() => {
+            onDoneRef.current && onDoneRef.current();
+          }, 0);
         }
         return prev + 1;
       });
