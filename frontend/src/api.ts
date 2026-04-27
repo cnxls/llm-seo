@@ -42,7 +42,7 @@ export const api = {
   stopRun: () => fetchApi<{ status: string }>('/runs/stop', { method: 'POST' }),
   
   getBrands: () => fetchApi<BrandsConfig>('/brands'),
-  getBrandsRaw: () => fetchApi<any>('/brands/raw'),
+  getBrandsRaw: () => fetchApi<Record<string, unknown>>('/brands/raw'),
   updateBrands: (brands: BrandsConfig) => fetchApi<{ status: string }>('/brands', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -65,7 +65,7 @@ export const api = {
   }),
   deleteConfig: (name: string) => fetchApi<{ status: string }>(`/configs/${name}`, { method: 'DELETE' }),
 
-  subscribeToActiveRun: (onMessage: (msg: SSEMessage) => void, onError: (err: any) => void) => {
+  subscribeToActiveRun: (onMessage: (msg: SSEMessage) => void, onError: (err: unknown) => void) => {
     let hasStarted = false;
     const es = new EventSource(`${BASE_URL}/runs/active`);
     

@@ -121,11 +121,11 @@ export default function DashboardPage({ onOpenCompare }: { onOpenCompare: () => 
         {/* By Provider */}
         <ProviderPanel 
           providers={providers.providers.map((p, i) => {
-            const pInfo: any = {
+            const pInfo: { label: string; sub: string; color: string } = ({
               openai: { label: 'OpenAI', sub: 'GPT-4o', color: '#10a37f' },
               anthropic: { label: 'Anthropic', sub: 'Claude Sonnet', color: '#d97757' },
               google: { label: 'Google', sub: 'Gemini 1.5 Pro', color: '#4285f4' }
-            }[p] || { label: p, sub: 'Model', color: '#666' };
+            })[p] ?? { label: p, sub: 'Model', color: '#666' };
             return {
               id: p,
               mentions: providers.mentions[i] || 0,
