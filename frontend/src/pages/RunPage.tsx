@@ -210,7 +210,7 @@ export default function RunPage() {
 
   // SSE — listen for real backend progress
   useEffect(() => {
-    if (phase !== 'running' && phase !== 'launching') return;
+    if (phase !== 'running') return;
     const unsub = api.subscribeToActiveRun(
       (msg) => {
         if (msg.run_name) setSseRunName(msg.run_name);
