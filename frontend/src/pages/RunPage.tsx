@@ -56,14 +56,18 @@ function QueryList({
           </select>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-2">
+      <div role="group" aria-label="Query list" className="flex-1 overflow-y-auto p-2">
         {visible.map(q => {
           const checked = selectedIds.has(q.id);
           const flying = flyingId === q.id;
           return (
             <div
               key={q.id}
+              role="checkbox"
+              aria-checked={checked}
+              tabIndex={disabled ? -1 : 0}
               onClick={() => !disabled && onToggle(q.id)}
+              onKeyDown={(e) => { if (!disabled && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); onToggle(q.id); } }}
               className={`group flex items-start gap-3 p-3 rounded-md cursor-pointer hover:bg-muted/30 transition ${flying ? 'fly' : ''} ${disabled ? 'pointer-events-none' : ''}`}
               style={flying ? { '--dx': '420px', '--dy': '-180px' } as React.CSSProperties : undefined}
             >
