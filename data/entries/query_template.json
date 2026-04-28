@@ -32,16 +32,7 @@
       "What separates the best {category} from average ones?"
     ],
     "problem_solving": [
-      "{competitor} is too expensive, what are alternatives?",
-      "Looking for a free alternative to {competitor}",
-      "What's a good replacement for {competitor} for {use_case}?",
-      "Which {category} option has the best free tier?",
-      "Cheaper alternatives to {competitor}",
-      "I'm not happy with {competitor}, what else should I try?",
-      "What should I switch to from {competitor}?",
-      "Open-source alternatives to {competitor}",
-      "Is there something better than {competitor} for {use_case}?",
-      "Lightweight alternatives to {competitor}"
+      "Which {category} option has the best free tier?"
     ],
     "feature_based": [
       "What is the best {category} for beginners?",
