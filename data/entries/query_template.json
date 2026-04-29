@@ -11,7 +11,7 @@
     "recommendation": [
       "What are the best options for {category}?",
       "What should I use for {use_case}?",
-      "Best {category} in 2024",
+      "Best {category} right now",
       "Top picks for {use_case}",
       "What do most people recommend for {category}?",
       "Most popular options for {category}",
@@ -27,12 +27,21 @@
       "Most recommended options for {use_case}",
       "How do the main {category} options differ?",
       "What are the pros and cons of popular {category}?",
-      "Which {category} stands out from the rest?",
+      "Which {category} option stands out from the rest?",
       "Compare the main players in {category}",
       "What separates the best {category} from average ones?"
     ],
     "problem_solving": [
-      "Which {category} option has the best free tier?"
+      "Which {category} option has the best free tier?",
+      "What is a good {category} option for someone on a tight budget?",
+      "Which {category} option works well without requiring a long-term contract?",
+      "What {category} option is best for someone switching from a bigger brand?",
+      "Which {category} option has the least complaints online?",
+      "What {category} option do people recommend after being disappointed by others?",
+      "Which {category} option is easiest to get started with?",
+      "What is a reliable {category} option for {use_case} without hidden costs?",
+      "Which {category} option is worth trying for {use_case} as a first-timer?",
+      "What do people say after switching {category} providers?"
     ],
     "feature_based": [
       "What is the best {category} for beginners?",
