@@ -69,11 +69,11 @@ def generate_queries_from_template(template, placeholders):
     
     base_vars = {
         "category": placeholders["category"],
-        "target": target[0],
-        "brand1": target[0]
+        "category_noun": placeholders["category_noun"],
+        "category_plural": placeholders["category_plural"],
     }
-    
-    needs_competitor = "brand1" in needed or "competitor" in needed
+
+    needs_competitor = "competitor" in needed
     comp_list = list(competitors.keys()) if needs_competitor else [None]
     case_list = use_cases if "use_case" in needed else [None]
     
