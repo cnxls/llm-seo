@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import json
 import yaml
 from dotenv import load_dotenv
 
@@ -7,6 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 CONFIG_PATH = Path(__file__).resolve().parent.parent / "config.yaml"
+SAVED_CONFIGS_PATH = Path(__file__).resolve().parent.parent / "data" / "entries" / "configs"
 
 def load_config(config_path = None):
     config_path = config_path or CONFIG_PATH
@@ -55,3 +57,13 @@ def load_api_key(provider_name: str) -> str:
         f"  - Windows (PowerShell): $env:{env_var_name}='your_api_key_here'\n"
         f"  - Mac/Linux: export {env_var_name}='your_api_key_here'"
     )
+
+
+def load_brand_config(saved_config_path=None):
+    base = Path(saved_config_path) if saved_config_path else SAVED_CONFIGS_PATH
+    files = [f for f in base.iterdir() if f.suffix == ".json"]
+    if not files:
+        raise FileNotFoundError(f"No saved configs found in {base}")
+    latest = max(files, key=lambda f: f.stat().st_mtime)
+    with latest.open("r", encoding="utf-8") as fh:
+        return json.load(fh)

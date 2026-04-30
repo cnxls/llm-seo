@@ -1,0 +1,16 @@
+ {                                                                                                                                                                                                                        
+    "brand_name": "",                                                                                                                                                                                                      
+    "description": "",                                                                                                                                                                                                     
+    "language": "", 
+    "placeholders": {
+      "category": "",
+      "category_noun": "",
+      "category_plural": "",
+      "use_cases": []
+    },
+    "target": {
+      "name": "",
+      "aliases": []
+    },
+    "competitors": []
+  }
