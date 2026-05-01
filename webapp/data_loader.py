@@ -1,6 +1,7 @@
 import json
 import re
 from pathlib import Path
+from src.config_loader import load_brand_config
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
@@ -30,17 +31,12 @@ def list_runs():
 
 
 def load_brands():
-    path = ENTRIES_DIR / "brands.json"
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    target = data["target"]
-    competitors = [c["name"] for c in data["competitors"]]
+    config = load_brand_config()
     return {
-        "target": target["name"],
-        "target_aliases": target["aliases"],
-        "competitors": competitors,
-        "competitor_aliases": {c["name"]: c["aliases"] for c in data["competitors"]},
+        "target": config["target"]["name"],
+        "target_aliases": config["target"]["aliases"],
+        "competitors": [c["name"] for c in config["competitors"]],
+        "competitor_aliases": {c["name"]: c["aliases"] for c in config["competitors"]},
     }
 
 
@@ -280,9 +276,14 @@ def load_templates():
 
 
 def save_brands(data):
-    path = ENTRIES_DIR / "brands.json"
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    config = load_brand_config()
+    config["target"] = data["target"]
+    config["competitors"] = data["competitors"]
+    configs_dir = ENTRIES_DIR / "configs"
+    files = list(configs_dir.glob("*.json"))
+    latest = max(files, key=lambda f: f.stat().st_mtime)
+    with open(latest, "w", encoding="utf-8") as f:
+        json.dump(config, f, indent=4, ensure_ascii=False)
 
 
 def save_templates(data):
@@ -292,61 +293,46 @@ def save_templates(data):
 
 
 def load_brands_raw():
-    path = ENTRIES_DIR / "brands.json"
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    config = load_brand_config()
+    return {
+        "target": config["target"],
+        "competitors": config["competitors"],
+    }
 
 
-CONFIGS_PATH = ENTRIES_DIR / "saved_configs.json"
+CONFIGS_DIR = ENTRIES_DIR / "configs"
 
 
 def list_configs():
-    if not CONFIGS_PATH.exists():
+    if not CONFIGS_DIR.exists():
         return []
-    with open(CONFIGS_PATH, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return [{"name": c["name"], "created": c.get("created", "")} for c in data]
+    files = sorted(CONFIGS_DIR.glob("*.json"), key=lambda f: f.stat().st_mtime, reverse=True)
+    return [{"name": f.stem, "created": f.stem.replace("config_", "")} for f in files]
 
 
 def load_config_by_name(name):
-    if not CONFIGS_PATH.exists():
+    path = CONFIGS_DIR / f"{name}.json"
+    if not path.exists():
         return None
-    with open(CONFIGS_PATH, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    for c in data:
-        if c["name"] == name:
-            return c
-    return None
-
-
-def save_config(name, brands, templates):
-    from datetime import datetime
-    configs = []
-    if CONFIGS_PATH.exists():
-        with open(CONFIGS_PATH, "r", encoding="utf-8") as f:
-            configs = json.load(f)
-
-    # Replace if same name exists
-    configs = [c for c in configs if c["name"] != name]
-    configs.append({
+    with open(path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+    return {
         "name": name,
-        "created": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "brands": brands,
-        "templates": templates,
-    })
-
-    with open(CONFIGS_PATH, "w", encoding="utf-8") as f:
-        json.dump(configs, f, indent=2, ensure_ascii=False)
+        "created": name.replace("config_", ""),
+        "brands": {
+            "target": config["target"]["name"],
+            "target_aliases": config["target"]["aliases"],
+            "competitors": [c["name"] for c in config["competitors"]],
+            "competitor_aliases": {c["name"]: c["aliases"] for c in config["competitors"]},
+        },
+        "templates": load_templates(),
+    }
 
 
 def delete_config(name):
-    if not CONFIGS_PATH.exists():
-        return
-    with open(CONFIGS_PATH, "r", encoding="utf-8") as f:
-        configs = json.load(f)
-    configs = [c for c in configs if c["name"] != name]
-    with open(CONFIGS_PATH, "w", encoding="utf-8") as f:
-        json.dump(configs, f, indent=2, ensure_ascii=False)
+    path = CONFIGS_DIR / f"{name}.json"
+    if path.exists():
+        path.unlink()
 
 
 def get_query_details(analysis, run_name):
