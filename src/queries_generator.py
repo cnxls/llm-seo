@@ -3,12 +3,12 @@ import logging
 from pathlib import Path
 from typing import Dict
 import re
+from .config_loader import load_brand_config
 
 logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).parent.parent/"data"/"entries"
 TEMPLATES_PATH = DATA_DIR / "query_template.json"
-BRANDS_PATH = DATA_DIR / "brands.json"
 OUTPUT_PATH = DATA_DIR / "queries.json"
 
 
@@ -31,23 +31,8 @@ def load_templates() -> Dict:
 
 
 
-def load_brands():
-    competitors = {}
-    try:
-        with open(BRANDS_PATH, 'r', encoding='utf-8') as file:
-            brands = json.load(file)
-            target = brands['target']['aliases']
-            for brand in brands['competitors']:
-                competitors[brand['name']] = brand['aliases']
-            return target, competitors 
-    except FileNotFoundError:
-        print("Brands not found.")
-        return [], {}
-
-
-
 def get_use_cases():
-    usecases = load_templates()['placeholders']['use_cases']
+    usecases = load_brand_config()['placeholders']['use_cases']
     return usecases
 
 
@@ -63,41 +48,32 @@ def fill_single_template(template, variables):
 
 
 def generate_queries_from_template(template, placeholders):
-    target, competitors = load_brands()
     needed = get_placeholders(template)
     use_cases = get_use_cases()
-    
+
     base_vars = {
         "category": placeholders["category"],
         "category_noun": placeholders["category_noun"],
         "category_plural": placeholders["category_plural"],
     }
 
-    needs_competitor = "competitor" in needed
-    comp_list = list(competitors.keys()) if needs_competitor else [None]
     case_list = use_cases if "use_case" in needed else [None]
     
     results = []
-    for comp in comp_list:
-        for case in case_list:
-            variables = {**base_vars}
-            
-            if comp:
-                variables["brand2"] = comp
-                variables["competitor"] = comp
-            if case:
-                variables["use_case"] = case
-            
-            query = fill_single_template(template, variables)
-            results.append(query)
-    
+    for case in case_list:
+        variables = {**base_vars}
+        if case:
+            variables["use_case"] = case
+        query = fill_single_template(template, variables)
+        results.append(query)
+
     return results
 
 def generate_all_queries():
     template_data = load_templates()
     all_queries = []
     id_x = 1
-    placeholders = template_data["placeholders"]
+    placeholders = load_brand_config()["placeholders"]
     for category, templates in template_data["templates"].items():
         for template in templates:
             queries = generate_queries_from_template(template, placeholders)
@@ -113,13 +89,11 @@ def generate_all_queries():
 
 
 def save_queries(queries, queries_path=OUTPUT_PATH):
-    """Save all generated queries to JSON file."""
-    target, competitors = load_brands()
-    
+    config = load_brand_config()
     output = {
-        "brand": target[0],
-        "competitors": list(competitors.keys()),
-        "queries": queries  # Already a list of {"id": ..., "category": ..., "query": ...}
+        "brand": config["target"]["name"],
+        "competitors": [c["name"] for c in config["competitors"]],
+        "queries": queries
     }
     
     try:
