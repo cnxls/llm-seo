@@ -34,7 +34,7 @@ async def generate_placeholders(brand_name: str, description: str, language: str
     cfg["description"] = description
     cfg["language"] = language
     cfg["target"] = {"name": brand_name, "aliases": [brand_name]}
-    cfg["competitors"] = result["competitors"]
+    cfg["competitors"] = [{"name": c, "aliases": [c]} for c in result["competitors"]]
     cfg["placeholders"]["category"] = result["category"]
     cfg["placeholders"]["category_noun"] = result["category_noun"]
     cfg["placeholders"]["category_plural"] = result["category_plural"]
