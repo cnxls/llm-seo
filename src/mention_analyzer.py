@@ -2,7 +2,8 @@ import logging
 import re
 import json
 import os
-from .query_runner import QueryRunner 
+from .query_runner import QueryRunner
+from .config_loader import load_brand_config
 
 OUTPUT_DIR = 'data/results'
 
@@ -80,18 +81,11 @@ def load_answers(run_dir=None):
 
 
 def load_brands():
-    competitors = {}
-    try:
-        with open(f'data/entries/brands.json', 'r', encoding='utf-8') as file:
-            brands = json.load(file)
-            target = brands['target']['aliases']
-            name = brands['target']['name']
-            for brand in brands['competitors']:
-                competitors[brand['name']] = brand['aliases']
-            return name, target, competitors  
-    except FileNotFoundError:
-        print("Brands file not found.")
-        return "", [], {}
+    config = load_brand_config()
+    name = config["target"]["name"]
+    target = config["target"]["aliases"]
+    competitors = {c["name"]: c["aliases"] for c in config["competitors"]}
+    return name, target, competitors
 
 
 
