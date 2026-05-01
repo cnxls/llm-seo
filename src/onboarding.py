@@ -5,7 +5,7 @@ import os
 
 OUTPUT_PATH = "data/entries/configs/"
 
-async def generate_placeholders(brand_name: str, description: str, language: str) ->  None: 
+async def generate_placeholders(brand_name: str, description: str, language: str) -> dict:
 
     with open('data/entries/config_template.json', 'r', encoding='utf-8') as file:
         cfg = json.load(file)
@@ -44,3 +44,4 @@ async def generate_placeholders(brand_name: str, description: str, language: str
     run_dir = os.path.join(OUTPUT_PATH, f'config_{timestamp}.json')
     with open(run_dir, 'w', encoding='utf-8') as outfile:
         json.dump(cfg, outfile, indent=4)
+    return cfg
