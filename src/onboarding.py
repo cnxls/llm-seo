@@ -1,5 +1,6 @@
 from .llm_clients import ask_anthropic, build_client
 import json
+import re
 from datetime import datetime
 import os
 
@@ -27,7 +28,7 @@ async def generate_placeholders(brand_name: str, description: str, language: str
     "competitors": ["5 to 8 real well-known competitor brand names in this industry — names only, not translated"]
   }}"""
     _, client = build_client("anthropic")
-    result = await ask_anthropic(client=client, question=prompt, model="claude-haiku-4-5-20251001")
+    result = await ask_anthropic(client=client, question=prompt, model="claude-haiku-4-5-20251001", prefill="{")
     result = json.loads(result["text"])
 
     cfg["brand_name"] = brand_name
