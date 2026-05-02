@@ -11,6 +11,7 @@ from typing import Optional
 from . import data_loader
 from . import run_manager
 from src.queries_generator import generate_all_queries
+from src.onboarding import generate_placeholders
 
 app = FastAPI(title="LLM SEO Monitor")
 
@@ -30,10 +31,10 @@ class RunStart(BaseModel):
     query_ids: Optional[list] = None
 
 
-class ConfigSave(BaseModel):
-    name: str
-    brands: dict
-    templates: dict
+class OnboardRequest(BaseModel):
+    brand_name: str
+    description: str
+    language: str
 
 
 class ConfigDelete(BaseModel):
@@ -46,6 +47,12 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 @app.get("/")
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.post("/api/onboard")
+async def onboard(data: OnboardRequest):
+    cfg = await generate_placeholders(data.brand_name, data.description, data.language)
+    return cfg
 
 
 @app.get("/api/runs")
@@ -199,12 +206,6 @@ async def get_config(name: str):
     if not config:
         return JSONResponse({"error": "Config not found"}, status_code=404)
     return config
-
-
-@app.post("/api/configs")
-async def save_config(data: ConfigSave):
-    data_loader.save_config(data.name, data.brands, data.templates)
-    return {"status": "ok"}
 
 
 @app.delete("/api/configs/{name}")

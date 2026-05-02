@@ -93,15 +93,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleCreateConfig = async (name: string) => {
-    try {
-      await api.createConfig({ name, brands: brands as BrandsConfig, templates });
-      await fetchConfigs();
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   const handleSaveAll = handleSubmit(async (data) => {
     setSaving(true);
     setError(null);
@@ -143,11 +134,10 @@ export default function SettingsPage() {
       )}
 
       <div className="space-y-10 bg-card border border-border rounded-md shadow-md p-8">
-        <ConfigManager 
+        <ConfigManager
           configs={configs}
           onLoad={handleLoadConfig}
           onDelete={handleDeleteConfig}
-          onSave={handleCreateConfig}
         />
 
         <Separator className="bg-border" />

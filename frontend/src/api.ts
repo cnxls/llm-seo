@@ -11,7 +11,9 @@ import {
   BrandsConfig,
   TemplatesConfig,
   ConfigItem,
-  FullConfig
+  FullConfig,
+  OnboardRequest,
+  OnboardConfig
 } from './types';
 
 const BASE_URL = '/api';
@@ -56,13 +58,14 @@ export const api = {
     body: JSON.stringify(templates)
   }),
   
-  getConfigs: () => fetchApi<ConfigItem[]>('/configs'),
-  getConfig: (name: string) => fetchApi<FullConfig>(`/configs/${name}`),
-  createConfig: (config: Omit<FullConfig, 'created'>) => fetchApi<{ status: string }>('/configs', {
+  onboard: (req: OnboardRequest) => fetchApi<OnboardConfig>('/onboard', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(config)
+    body: JSON.stringify(req)
   }),
+
+  getConfigs: () => fetchApi<ConfigItem[]>('/configs'),
+  getConfig: (name: string) => fetchApi<FullConfig>(`/configs/${name}`),
   deleteConfig: (name: string) => fetchApi<{ status: string }>(`/configs/${name}`, { method: 'DELETE' }),
 
   subscribeToActiveRun: (onMessage: (msg: SSEMessage) => void, onError: (err: unknown) => void) => {

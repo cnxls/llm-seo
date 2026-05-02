@@ -31,7 +31,15 @@ def list_runs():
 
 
 def load_brands():
-    config = load_brand_config()
+    try:
+        config = load_brand_config()
+    except FileNotFoundError:
+        return {
+            "target": "",
+            "target_aliases": [],
+            "competitors": [],
+            "competitor_aliases": {},
+        }
     return {
         "target": config["target"]["name"],
         "target_aliases": config["target"]["aliases"],
@@ -276,9 +284,28 @@ def load_templates():
 
 
 def save_brands(data):
-    config = load_brand_config()
-    config["target"] = data["target"]
-    config["competitors"] = data["competitors"]
+    try:
+        config = load_brand_config()
+    except FileNotFoundError:
+        return
+    target_in = data.get("target")
+    if isinstance(target_in, str):
+        config["target"] = {
+            "name": target_in,
+            "aliases": data.get("target_aliases", [target_in]),
+        }
+    elif isinstance(target_in, dict):
+        config["target"] = target_in
+
+    comps_in = data.get("competitors", [])
+    aliases_map = data.get("competitor_aliases", {})
+    if comps_in and isinstance(comps_in[0], str):
+        config["competitors"] = [
+            {"name": c, "aliases": aliases_map.get(c, [c])} for c in comps_in
+        ]
+    else:
+        config["competitors"] = comps_in
+
     configs_dir = ENTRIES_DIR / "configs"
     files = list(configs_dir.glob("*.json"))
     latest = max(files, key=lambda f: f.stat().st_mtime)
@@ -293,7 +320,10 @@ def save_templates(data):
 
 
 def load_brands_raw():
-    config = load_brand_config()
+    try:
+        config = load_brand_config()
+    except FileNotFoundError:
+        return {"target": {"name": "", "aliases": []}, "competitors": []}
     return {
         "target": config["target"],
         "competitors": config["competitors"],

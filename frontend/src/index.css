@@ -341,3 +341,82 @@
 
 /* Tabular nums */
 .tabular { font-variant-numeric: tabular-nums; }
+
+/* === WIZARD ONBOARDING SCAN ANIMATION === */
+.wizard-scan {
+  position: relative;
+}
+
+/* Soft ambient green glow behind logo */
+.wizard-scan-glow {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, hsla(104, 40%, 55%, 0.18) 0%, hsla(104, 40%, 55%, 0) 70%);
+  pointer-events: none;
+  animation: wizardGlowPulse 2.4s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes wizardGlowPulse {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.95); }
+  50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.08); }
+}
+
+/* Sweeping conic ring around the logo */
+.wizard-scan-sweep {
+  background: conic-gradient(
+    from 0deg,
+    hsla(104, 40%, 55%, 0) 0deg,
+    hsla(104, 40%, 55%, 0) 280deg,
+    hsla(104, 50%, 60%, 0.55) 340deg,
+    hsla(104, 60%, 70%, 0.85) 358deg,
+    hsla(104, 40%, 55%, 0) 360deg
+  );
+  -webkit-mask: radial-gradient(circle at center, transparent 60%, black 62%, black 78%, transparent 80%);
+          mask: radial-gradient(circle at center, transparent 60%, black 62%, black 78%, transparent 80%);
+  animation: wizardSweep 2.6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes wizardSweep {
+  to { transform: rotate(360deg); }
+}
+
+/* Three orbiting dots */
+.wizard-orbit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.wizard-orbit-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 9999px;
+  background: hsl(104, 35%, 50%);
+  box-shadow: 0 0 12px hsla(104, 50%, 55%, 0.8);
+  animation: wizardOrbit 4.5s linear infinite;
+}
+
+@keyframes wizardOrbit {
+  0%   { transform: rotate(0deg)   translateX(118px) rotate(0deg);   opacity: 0.95; }
+  50%  { opacity: 0.4; }
+  100% { transform: rotate(360deg) translateX(118px) rotate(-360deg); opacity: 0.95; }
+}
+
+/* Discovery pills entering with a pop */
+@keyframes wizardPillIn {
+  0%   { opacity: 0; transform: translateY(8px) scale(0.85); }
+  60%  { opacity: 1; transform: translateY(-2px) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.wizard-pill {
+  animation: wizardPillIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}

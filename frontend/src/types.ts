@@ -133,3 +133,28 @@ export interface FullConfig {
   brands: BrandsConfig;
   templates: TemplatesConfig;
 }
+
+export interface OnboardRequest {
+  brand_name: string;
+  description: string;
+  language: string;
+}
+
+export interface BrandEntry {
+  name: string;
+  aliases: string[];
+}
+
+export interface OnboardConfig {
+  brand_name: string;
+  description: string;
+  language: string;
+  placeholders: {
+    category: string;
+    category_noun: string;
+    category_plural: string;
+    use_cases: string[];
+  };
+  target: BrandEntry;
+  competitors: BrandEntry[];
+}

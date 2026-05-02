@@ -48,7 +48,7 @@ export default function DashboardPage({ onOpenCompare }: { onOpenCompare: () => 
   }
 
   const target = summary.brands.find(b => b.is_target);
-  const winRate = summary.total_queries > 0
+  const winRate = summary.total_queries > 0 && providers.providers.length > 0
     ? Math.round((target?.wins ?? 0) / (summary.total_queries * providers.providers.length) * 100)
     : 0;
   const targetRank = summary.brands.findIndex(b => b.is_target) + 1;
