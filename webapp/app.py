@@ -51,8 +51,11 @@ async def index(request: Request):
 
 @app.post("/api/onboard")
 async def onboard(data: OnboardRequest):
-    cfg = await generate_placeholders(data.brand_name, data.description, data.language)
-    return cfg
+    try:
+        cfg = await generate_placeholders(data.brand_name, data.description, data.language)
+        return cfg
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 
 @app.get("/api/runs")
