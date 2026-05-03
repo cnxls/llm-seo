@@ -14,13 +14,20 @@ OUTPUT_PATH = DATA_DIR / "queries.json"
 
 def load_templates() -> Dict:
     try:
+        config = load_brand_config()
+        if config.get("templates"):
+            return config["templates"]
+    except FileNotFoundError:
+        pass
+
+    try:
         with open(TEMPLATES_PATH, 'r', encoding='utf-8') as file:
             return json.load(file)
-    
+
     except FileNotFoundError:
         logger.error(f"File {TEMPLATES_PATH} not found.")
         raise  FileNotFoundError
-    
+
     except json.JSONDecodeError:
         logger.error(f"Error decoding JSON from file {TEMPLATES_PATH}.")
         raise json.JSONDecodeError

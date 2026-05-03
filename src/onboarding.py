@@ -5,6 +5,33 @@ from datetime import datetime
 import os
 
 OUTPUT_PATH = "data/entries/configs/"
+TEMPLATES_PATH = "data/entries/query_template.json"
+
+
+async def translate_templates(client, templates: dict, language: str) -> dict:
+    if language.strip().lower() == "english":
+        return templates
+    prompt = f"""Translate the string values in the following JSON to {language}.
+Preserve every {{placeholder}} token EXACTLY (e.g. {{category}}, {{category_noun}}, {{category_plural}}, {{use_case}}). Do not translate the placeholder names.
+Keep the JSON structure identical: same keys, same array lengths.
+Only translate the natural-language strings — leave the keys and placeholders unchanged.
+
+Input JSON:
+{json.dumps(templates, ensure_ascii=False, indent=2)}
+
+Return ONLY the translated JSON object, no other text."""
+    resp = await ask_anthropic(
+        client=client,
+        question=prompt,
+        model="claude-haiku-4-5-20251001",
+        prefill="{",
+        max_tokens=4000,
+    )
+    try:
+        return json.loads(resp["text"])
+    except json.JSONDecodeError:
+        return templates
+
 
 async def generate_placeholders(brand_name: str, description: str, language: str) -> dict:
 
@@ -40,6 +67,10 @@ async def generate_placeholders(brand_name: str, description: str, language: str
     cfg["placeholders"]["category_noun"] = result["category_noun"]
     cfg["placeholders"]["category_plural"] = result["category_plural"]
     cfg["placeholders"]["use_cases"] = result["use_cases"]
+
+    with open(TEMPLATES_PATH, 'r', encoding='utf-8') as file:
+        templates = json.load(file)
+    cfg["templates"] = await translate_templates(client, templates, language)
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     run_dir = os.path.join(OUTPUT_PATH, f'config_{timestamp}.json')

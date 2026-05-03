@@ -139,7 +139,7 @@ async def ask_openai(client: AsyncOpenAI, question: str, model: str) -> Dict[str
         raise
 
 
-async def ask_anthropic(client: AsyncAnthropic, question: str, model: str, prefill: str = "") -> Dict[str, Any]:
+async def ask_anthropic(client: AsyncAnthropic, question: str, model: str, prefill: str = "", max_tokens: Optional[int] = None) -> Dict[str, Any]:
 
     async def _call():
         messages = [{"role": "user", "content": question}]
@@ -147,7 +147,7 @@ async def ask_anthropic(client: AsyncAnthropic, question: str, model: str, prefi
             messages.append({"role": "assistant", "content": prefill})
         response = await client.messages.create(
             model=model,
-            max_tokens=get_provider_config("anthropic").get("max_tokens", 512),
+            max_tokens=max_tokens if max_tokens is not None else get_provider_config("anthropic").get("max_tokens", 512),
             messages=messages,
         )
         return response
