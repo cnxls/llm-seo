@@ -103,7 +103,8 @@ def _build_analysis(run_name):
 
             text = response_data["text"]
             mentions = _detect_mentions(text, target_name, target_aliases, competitor_aliases)
-            max_brand = max(mentions, key=lambda m: m["count"])["brand"]
+            top = max(mentions, key=lambda m: m["count"])
+            max_brand = top["brand"] if top["count"] > 0 else None
 
             for mention in mentions:
                 results.append({
