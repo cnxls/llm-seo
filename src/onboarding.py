@@ -55,8 +55,10 @@ async def generate_placeholders(brand_name: str, description: str, language: str
     "competitors": ["5 to 8 real well-known competitor brand names in this industry — names only, not translated"]
   }}"""
     _, client = build_client("anthropic")
-    result = await ask_anthropic(client=client, question=prompt, model="claude-sonnet-4-6", prefill="{")
-    result = json.loads(result["text"])
+    result = await ask_anthropic(client=client, question=prompt, model="claude-sonnet-4-6")
+    text = result["text"]
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    result = json.loads(match.group(0) if match else text)
 
     cfg["brand_name"] = brand_name
     cfg["description"] = description
