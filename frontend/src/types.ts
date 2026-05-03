@@ -17,6 +17,7 @@ export interface RunSummary {
   brands: BrandStat[];
   target: string;
   total_queries: number;
+  total_completions: number;
 }
 
 export interface ProvidersData {
