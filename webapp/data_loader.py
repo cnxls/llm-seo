@@ -267,6 +267,12 @@ def get_category_performance(analysis, target_brand):
 
 
 def load_templates():
+    try:
+        config = load_brand_config()
+        if config.get("templates"):
+            return config["templates"]
+    except FileNotFoundError:
+        pass
     path = ENTRIES_DIR / "query_template.json"
     if not path.exists():
         return {}
