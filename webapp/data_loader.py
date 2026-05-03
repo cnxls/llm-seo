@@ -67,16 +67,6 @@ def load_raw_responses(run_name):
 
 
 def load_analysis(run_name):
-    run_path = RESULTS_DIR / run_name
-    analysis_path = run_path / "analysis.json"
-
-    if analysis_path.exists():
-        with open(analysis_path, "r") as f:
-            analysis = json.load(f)
-        if analysis and "provider" in analysis[0]:
-            return analysis
-
-    # Analysis is missing or lacks provider field — rebuild from raw outputs
     return _build_analysis(run_name)
 
 
