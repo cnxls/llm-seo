@@ -203,8 +203,13 @@ export default function RunPage() {
     api.getBrandsRaw().then((data: Record<string, unknown>) => {
       const name = data?.target?.name || data?.target || '';
       setTargetBrand(typeof name === 'string' ? name : '');
-      const comps = data?.competitors || {};
-      setCompetitors(typeof comps === 'object' && !Array.isArray(comps) ? Object.keys(comps) : Array.isArray(comps) ? comps : []);
+      const comps = data?.competitors;
+      setCompetitors(
+        Array.isArray(comps)
+          ? comps.map(c => typeof c === 'string' ? c : (c as { name: string }).name).filter(Boolean)
+          : comps && typeof comps === 'object' ? Object.keys(comps)
+          : []
+      );
     }).catch(console.error);
   }, []);
 
