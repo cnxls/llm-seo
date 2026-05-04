@@ -153,7 +153,8 @@ class MentionsAnalyzer:
 
         for answer in responses:     
             mentions = MentionsAnalyzer.detect_mentions(answer.answer, name, target, competitors)  
-            max_brand = max(mentions, key=lambda x: x['count'])['brand']
+            max_mention = max(mentions, key=lambda x: x['count'])
+            max_brand = max_mention['brand'] if max_mention['count'] > 0 else None
               
             for mention in mentions:
                 analysis_results.append({
