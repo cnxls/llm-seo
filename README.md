@@ -19,7 +19,7 @@ This tool helps you:
    - "[Brand A] vs [Brand B] for [use case]"
    - "Is [Brand] worth it for [use case]?"
 
-2. **Enhance queries** — uses GPT-4o-mini to rephrase robotic templates into natural human questions:
+2. **Enhance queries** — uses an LLM to rephrase robotic templates into natural human questions:
    - Before: "Obsidian vs Notion for research"
    - After: "I'm a researcher trying to decide between Obsidian and Notion - which handles academic notes better?"
 
@@ -54,20 +54,31 @@ You need at least one API key. Get them from:
 
 ### 3. Configure your brand
 
-Edit `data/entries/brands.json`:
+Run the onboarding wizard from the web dashboard (see below) — it saves a config to `data/entries/configs/`. The config shape looks like:
 
 ```json
 {
+  "brand_name": "Your Brand",
+  "description": "",
+  "language": "en",
+  "placeholders": {
+    "category": "note-taking app",
+    "category_noun": "app",
+    "category_plural": "apps",
+    "use_cases": ["research", "journaling"]
+  },
   "target": {
     "name": "Your Brand",
     "aliases": ["YourBrand", "Your-Brand", "yourbrand"]
   },
-  "competitors": {
-    "Competitor A": ["CompA", "Comp-A"],
-    "Competitor B": ["CompB"]
-  }
+  "competitors": [
+    {"name": "Competitor A", "aliases": ["CompA", "Comp-A"]},
+    {"name": "Competitor B", "aliases": ["CompB"]}
+  ]
 }
 ```
+
+The wizard auto-generates placeholders and translates query templates into the user's language.
 
 ## Usage
 
@@ -86,7 +97,7 @@ poetry run python -m src.cli analyze    # Analyze brand mentions
 poetry run python -m src.cli generate
 ```
 
-Creates `data/entries/queries.json` from templates in `data/entries/query_template.json`.
+Creates `data/entries/queries.json` from templates in the active config (falls back to `data/entries/query_template.json`). Templates use `category`, `category_noun`, `category_plural`, and `use_cases` placeholders.
 
 ### Step 2: Enhance queries (optional)
 
@@ -94,7 +105,7 @@ Creates `data/entries/queries.json` from templates in `data/entries/query_templa
 poetry run python -m src.cli enhance
 ```
 
-Uses GPT-4o-mini to make queries sound natural. Creates `data/entries/queries_enhanced.json`.
+Uses an LLM to make queries sound natural. Creates `data/entries/queries_enhanced.json`.
 
 ### Step 3: Run queries
 
@@ -123,17 +134,20 @@ Analyzes the most recent run, saves `analysis.json`, and prints a summary of bra
 
 ## Web dashboard
 
-There's a web UI for configuring brands, running queries, and viewing results:
+The dashboard is a React frontend talking to a FastAPI backend. Start both:
 
 ```bash
 poetry run uvicorn webapp.app:app --reload
+cd frontend && npm install && npm run dev
 ```
 
-Open `http://localhost:8000` in your browser. From there you can:
-- Set up your brand and competitors
+Open `http://localhost:5173` in your browser. From there you can:
+- Onboard a new brand through a wizard that builds the config for you
 - Run queries and watch progress in real time
 - View mention stats, provider comparison charts, and per-query breakdowns
+- Compare two runs side by side
 - Save and load configurations for different analyses
+- Browse a glossary of LLM SEO terms
 
 ## Running tests
 
