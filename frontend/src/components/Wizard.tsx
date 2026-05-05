@@ -382,7 +382,7 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
                 {config?.placeholders.category && <> across <strong className="font-bold">{config.placeholders.category}</strong> queries</>}.
               </p>
               <p className="text-sm text-muted-foreground">
-                You'll land on your Dashboard. Trigger a new Run anytime!
+                You'll land on the Run page to kick off your first run.
               </p>
             </div>
           )}
@@ -420,7 +420,7 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
             )}
             {step === 4 && (
               <Button className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleFinalize}>
-                Go to Dashboard <Play size={16} className="ml-2 fill-current" />
+                Go to Run <Play size={16} className="ml-2 fill-current" />
               </Button>
             )}
           </div>

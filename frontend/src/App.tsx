@@ -51,7 +51,7 @@ export default function App() {
         <Wizard 
           initialBrand={trackedBrand} 
           onClose={() => setShowWizard(false)} 
-          onComplete={() => setShowWizard(false)} 
+          onComplete={() => { setShowWizard(false); navigate('/run'); }}
         />
       )}
     </AppShell>
