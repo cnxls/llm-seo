@@ -30,11 +30,11 @@ def load_templates() -> Dict:
 
     except json.JSONDecodeError:
         logger.error(f"Error decoding JSON from file {TEMPLATES_PATH}.")
-        raise json.JSONDecodeError
+        raise
 
     except PermissionError:
         logger.error(f"Permission denied reading file: {TEMPLATES_PATH}")
-        raise PermissionError
+        raise
 
 
 
