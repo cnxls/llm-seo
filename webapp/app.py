@@ -97,7 +97,7 @@ async def stop_run():
 
 @app.get("/api/queries/preview")
 async def preview_queries():
-    queries = generate_all_queries()
+    queries = await generate_all_queries()
     return {"queries": queries, "total": len(queries)}
 
 

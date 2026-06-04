@@ -26,7 +26,7 @@ async def execute_run(query_ids=None):
     active_run["cancel_requested"] = False
     
     try:
-        generated_qs = generate_all_queries()
+        generated_qs = await generate_all_queries()
         save_queries(generated_qs)
         
         if query_ids:                                                                                                                                                                                                                                                                        

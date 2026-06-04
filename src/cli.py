@@ -6,7 +6,6 @@ def main():
     subparsers = parser.add_subparsers(dest="command")
     
     subparsers.add_parser("generate", help="Generate queries from templates")
-    subparsers.add_parser("enhance", help="Enhance queries with LLM")
     subparsers.add_parser("run", help="Run queries against LLMs")
     subparsers.add_parser("analyze", help="Analyze brand mentions")
 
@@ -14,12 +13,8 @@ def main():
 
     if args.command == "generate":
         from .queries_generator import generate_all_queries, save_queries
-        queries = generate_all_queries()
+        queries = aio.run(generate_all_queries())
         save_queries(queries)
-
-    elif args.command == "enhance":
-        from .query_enhancer import enhance_queries
-        aio.run(enhance_queries())
 
     elif args.command == "run":
         from .query_runner import QueryRunner
