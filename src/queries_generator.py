@@ -78,9 +78,13 @@ async def generate_all_queries():
     all_queries = []
     id_x = 1
 
-    for (cat_name, cat_desc) in categories:
-        prompt = build_prompt(language, description, use_cases, cat_noun, cat_plural, cat_name, cat_desc)
-        response = await ask_provider("openai", prompt)
+    prompts = [
+        build_prompt(language, description, use_cases, cat_noun, cat_plural, cat_name, cat_desc)
+        for (cat_name, cat_desc) in categories
+    ]
+    responses = await aio.gather(*(ask_provider("openai", prompt) for prompt in prompts))
+
+    for (cat_name, cat_desc), response in zip(categories, responses):
         queries = parse_query_list(response['text'])
         for query in queries:
             all_queries.append({
