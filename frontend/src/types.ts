@@ -1,5 +1,6 @@
 export interface RunSummaryData {
   name: string;
+  label: string;
   query_count: number;
   has_analysis: boolean;
 }
@@ -77,12 +78,14 @@ export interface QueryRawData {
 export interface CompareData {
   run_a: {
     name: string;
+    label: string;
     summary: RunSummary;
     providers: ProvidersData;
     categories: CategoriesData;
   };
   run_b: {
     name: string;
+    label: string;
     summary: RunSummary;
     providers: ProvidersData;
     categories: CategoriesData;
@@ -103,6 +106,7 @@ export interface PreviewResponse {
 export interface SSEMessage {
   running: boolean;
   run_name: string;
+  label: string | null;
   total: number;
   completed: number;
   current_query: string;

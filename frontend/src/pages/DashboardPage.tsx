@@ -72,7 +72,7 @@ export default function DashboardPage({ onOpenCompare }: { onOpenCompare: () => 
           <SelectContent>
             {runs.map(r => (
               <SelectItem key={r.name} value={r.name}>
-                {r.name} ({r.query_count} queries)
+                {r.label} ({r.query_count} queries)
               </SelectItem>
             ))}
           </SelectContent>

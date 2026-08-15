@@ -83,7 +83,7 @@ export default function CompareCharts({ data }: CompareChartsProps) {
         <div className="space-y-6 flex flex-col">
           <div className="border border-border bg-card p-4 rounded-md shadow-sm">
             <Badge className="bg-muted text-muted-foreground border-border hover:bg-muted mb-2">Baseline</Badge>
-            <h2 className="text-xl font-bold font-mono text-foreground">{data.run_a.name}</h2>
+            <h2 className="text-xl font-bold font-mono text-foreground">{data.run_a.label}</h2>
             <p className="text-sm text-accent mt-1 mr-2 px-2 py-0.5 bg-accent/10 w-fit rounded border border-accent/20">Target: {data.run_a.summary.target}</p>
           </div>
           
@@ -104,7 +104,7 @@ export default function CompareCharts({ data }: CompareChartsProps) {
         <div className="space-y-6 flex flex-col">
           <div className="border border-border bg-card p-4 rounded-md shadow-sm">
             <Badge className="bg-accent/20 text-accent border-accent/30 hover:bg-accent/20 mb-2">Comparison</Badge>
-            <h2 className="text-xl font-bold font-mono text-foreground">{data.run_b.name}</h2>
+            <h2 className="text-xl font-bold font-mono text-foreground">{data.run_b.label}</h2>
             <p className="text-sm text-accent mt-1 mr-2 px-2 py-0.5 bg-accent/10 w-fit rounded border border-accent/20">Target: {data.run_b.summary.target}</p>
           </div>
           

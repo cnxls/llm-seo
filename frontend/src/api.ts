@@ -36,10 +36,13 @@ export const api = {
   compareRuns: (a: string, b: string) => fetchApi<CompareData>(`/runs/compare?run_a=${a}&run_b=${b}`),
   getPreviewQueries: () => fetchApi<PreviewResponse>('/queries/preview'),
   
-  startRun: (queryIds?: number[]) => fetchApi<{ status: string }>('/runs/start', {
+  startRun: (queryIds?: number[], runLabel?: string) => fetchApi<{ status: string }>('/runs/start', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query_ids: queryIds && queryIds.length > 0 ? queryIds : undefined })
+    body: JSON.stringify({
+      query_ids: queryIds && queryIds.length > 0 ? queryIds : undefined,
+      run_label: runLabel?.trim() || undefined,
+    })
   }),
   stopRun: () => fetchApi<{ status: string }>('/runs/stop', { method: 'POST' }),
   

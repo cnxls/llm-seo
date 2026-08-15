@@ -1,5 +1,6 @@
 from src.queries_generator import save_queries
 from . import query_cache
+from . import data_loader
 from src.query_runner import QueryOutput, generate_summary
 from datetime import datetime
 from src.llm_clients import ask_all_providers
@@ -12,6 +13,7 @@ import asyncio
 active_run = {
     "running": False,
     "run_name": None,
+    "label": None,
     "total": 0,
     "completed": 0,
     "current_query": None,
@@ -19,27 +21,41 @@ active_run = {
     "cancel_requested": False
 }
 
-async def execute_run(query_ids=None):
+
+def _default_label():
+    brand_name = data_loader.load_brands().get("target") or "Run"
+    existing = len(data_loader.list_runs())
+    return f"{brand_name} #{existing + 1}"
+
+
+async def execute_run(query_ids=None, run_label=None):
     active_run["running"] = True
     active_run["run_name"] = None
+    active_run["label"] = None
     active_run["completed"] = 0
     active_run["total"] = 0
     active_run["current_query"] = None
     active_run["error"] = None
     active_run["cancel_requested"] = False
-    
+
     try:
         generated_qs = await query_cache.get_queries()
         save_queries(generated_qs)
-        
-        if query_ids:                                                                                                                                                                                                                                                                        
+
+        if query_ids:
             generated_qs = [q for q in generated_qs if q["id"] in query_ids]
-        
+
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         run_name = f"run_{timestamp}"
         run_dir = os.path.join("data/results", run_name)
         os.makedirs(run_dir, exist_ok=True)
+
+        label = (run_label or "").strip() or _default_label()
+        with open(os.path.join(run_dir, "meta.json"), "w", encoding="utf-8") as f:
+            json.dump({"label": label}, f, indent=2, ensure_ascii=False)
+
         active_run["run_name"] = run_name
+        active_run["label"] = label
         active_run["total"] = len(generated_qs)
 
         parallel_workers = CONFIG["query_runner"]["parallel_workers"]

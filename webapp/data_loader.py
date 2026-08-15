@@ -9,6 +9,21 @@ RESULTS_DIR = DATA_DIR / "results"
 ENTRIES_DIR = DATA_DIR / "entries"
 
 
+def _read_run_label(run_dir):
+    meta_path = run_dir / "meta.json"
+    if meta_path.exists():
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                return json.load(f).get("label") or run_dir.name
+        except (json.JSONDecodeError, OSError):
+            return run_dir.name
+    return run_dir.name
+
+
+def get_run_label(run_name):
+    return _read_run_label(RESULTS_DIR / run_name)
+
+
 def list_runs():
     if not RESULTS_DIR.exists():
         return []
@@ -22,6 +37,7 @@ def list_runs():
             continue
         runs.append({
             "name": d.name,
+            "label": _read_run_label(d),
             "query_count": len(output_files),
             "has_analysis": (d / "analysis.json").exists(),
         })

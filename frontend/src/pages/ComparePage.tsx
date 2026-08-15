@@ -53,7 +53,7 @@ export default function ComparePage() {
             </SelectTrigger>
             <SelectContent>
               {runs.map(r => (
-                <SelectItem key={`A-${r.name}`} value={r.name}>{r.name}</SelectItem>
+                <SelectItem key={`A-${r.name}`} value={r.name}>{r.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -67,7 +67,7 @@ export default function ComparePage() {
             </SelectTrigger>
             <SelectContent>
               {runs.map(r => (
-                <SelectItem key={`B-${r.name}`} value={r.name}>{r.name}</SelectItem>
+                <SelectItem key={`B-${r.name}`} value={r.name}>{r.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>

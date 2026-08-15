@@ -162,6 +162,12 @@ export default function RunPage() {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [runError, setRunError] = useState<string | null>(null);
 
+  // Run naming
+  const [pastRunCount, setPastRunCount] = useState(0);
+  const [runLabel, setRunLabel] = useState('');
+  const [runLabelTouched, setRunLabelTouched] = useState(false);
+  const [launchedLabel, setLaunchedLabel] = useState('');
+
   // Launch animation
   const [flyingId, setFlyingId] = useState<number | null>(null);
   const [trayCount, setTrayCount] = useState(0);
@@ -211,7 +217,15 @@ export default function RunPage() {
           : []
       );
     }).catch(console.error);
+
+    api.getRuns().then(runs => setPastRunCount(runs.length)).catch(console.error);
   }, []);
+
+  const defaultRunLabel = `${targetBrand || 'Run'} #${pastRunCount + 1}`;
+  useEffect(() => {
+    if (!runLabelTouched) setRunLabel(defaultRunLabel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetBrand, pastRunCount]);
 
   // SSE — listen for real backend progress
   useEffect(() => {
@@ -239,6 +253,8 @@ export default function RunPage() {
   const launch = async () => {
     if (!selectedIds.size || phase !== 'idle') return;
     const ids = Array.from(selectedIds);
+    const label = runLabel.trim() || defaultRunLabel;
+    setLaunchedLabel(label);
     setPhase('launching');
     setTrayCount(0);
     resetMockIndexes();
@@ -258,7 +274,7 @@ export default function RunPage() {
 
     // Start real backend run
     try {
-      await api.startRun(ids);
+      await api.startRun(ids, label);
     } catch (err: unknown) {
       setRunError(err instanceof Error ? err.message : 'Failed to start run — is the backend running?');
       setPhase('idle');
@@ -348,6 +364,8 @@ export default function RunPage() {
     setCurrentQ('');
     setSseRunName('');
     setRunError(null);
+    setRunLabelTouched(false);
+    setLaunchedLabel('');
   };
 
   return (
@@ -389,6 +407,19 @@ export default function RunPage() {
           <div className="space-y-4">
             <ReadyTray count={selectedIds.size} total={queries.length} ticking={false} />
             <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="run-label" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Run name
+                </label>
+                <input
+                  id="run-label"
+                  type="text"
+                  value={runLabel}
+                  placeholder={defaultRunLabel}
+                  onChange={e => { setRunLabel(e.target.value); setRunLabelTouched(true); }}
+                  className="flex h-10 w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                />
+              </div>
               <div className="text-sm text-muted-foreground">
                 Selected queries will be sent to all 3 providers — you'll see each response stream in.
               </div>
@@ -459,7 +490,7 @@ export default function RunPage() {
       {phase === 'done' && (
         <CompletionCard
           stats={totalStats}
-          runName={sseRunName || undefined}
+          runName={launchedLabel || sseRunName || undefined}
           onView={() => navigate('/dashboard')}
           onReset={reset}
         />

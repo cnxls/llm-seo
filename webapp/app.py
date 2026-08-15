@@ -31,6 +31,7 @@ class TemplatesUpdate(BaseModel):
 
 class RunStart(BaseModel):
     query_ids: Optional[list] = None
+    run_label: Optional[str] = None
 
 
 class OnboardRequest(BaseModel):
@@ -70,7 +71,7 @@ async def get_runs():
 async def start_run(data: RunStart = RunStart()):
     if run_manager.active_run["running"]:
         return JSONResponse({"error": "A run is already active"}, status_code=409)
-    asyncio.create_task(run_manager.execute_run(data.query_ids))
+    asyncio.create_task(run_manager.execute_run(data.query_ids, data.run_label))
     return {"status": "started"}
 
 
@@ -118,6 +119,7 @@ async def compare_runs(run_a: str = Query(...), run_b: str = Query(...)):
     return {
         "run_a": {
             "name": run_a,
+            "label": data_loader.get_run_label(run_a),
             "summary": {
                 "brands": data_loader.get_brand_summary(analysis_a),
                 "target": target,
@@ -128,6 +130,7 @@ async def compare_runs(run_a: str = Query(...), run_b: str = Query(...)):
         },
         "run_b": {
             "name": run_b,
+            "label": data_loader.get_run_label(run_b),
             "summary": {
                 "brands": data_loader.get_brand_summary(analysis_b),
                 "target": target,
