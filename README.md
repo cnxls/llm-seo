@@ -14,18 +14,11 @@ This tool helps you:
 
 ## How it works
 
-1. **Generate queries** — creates realistic search questions based on templates:
-   - "What's the best app for [use case]?"
-   - "[Brand A] vs [Brand B] for [use case]"
-   - "Is [Brand] worth it for [use case]?"
+1. **Generate queries** — an LLM writes natural, realistic questions a real person would ask about your category, based on your brand's placeholders and use cases
 
-2. **Enhance queries** — uses an LLM to rephrase robotic templates into natural human questions:
-   - Before: "Obsidian vs Notion for research"
-   - After: "I'm a researcher trying to decide between Obsidian and Notion - which handles academic notes better?"
+2. **Run queries** — sends questions to ChatGPT, Claude, and Gemini, saves all responses
 
-3. **Run queries** — sends questions to ChatGPT, Claude, and Gemini, saves all responses
-
-4. **Analyze mentions** — parses responses to count brand mentions, sentiment, and recommendation strength
+3. **Analyze mentions** — parses responses to count brand mentions, sentiment, and recommendation strength
 
 ## Setup
 
@@ -85,8 +78,7 @@ The wizard auto-generates placeholders and translates query templates into the u
 All commands can be run via the CLI:
 
 ```bash
-poetry run python -m src.cli generate   # Generate queries from templates
-poetry run python -m src.cli enhance    # Enhance queries with LLM
+poetry run python -m src.cli generate   # Generate queries via LLM
 poetry run python -m src.cli run        # Run queries against LLMs
 poetry run python -m src.cli analyze    # Analyze brand mentions
 ```
@@ -97,17 +89,9 @@ poetry run python -m src.cli analyze    # Analyze brand mentions
 poetry run python -m src.cli generate
 ```
 
-Creates `data/entries/queries.json` from templates in the active config (falls back to `data/entries/query_template.json`). Templates use `category`, `category_noun`, `category_plural`, and `use_cases` placeholders.
+Uses the active config's brand description, category, and use cases to have an LLM generate natural queries across several intent categories (recommendation, comparison, problem-solving, etc.), and saves them to `data/entries/queries.json`.
 
-### Step 2: Enhance queries (optional)
-
-```bash
-poetry run python -m src.cli enhance
-```
-
-Uses an LLM to make queries sound natural. Creates `data/entries/queries_enhanced.json`.
-
-### Step 3: Run queries
+### Step 2: Run queries
 
 ```bash
 poetry run python -m src.cli run
@@ -124,7 +108,7 @@ poetry run python -m src.query_runner --resume data/results/run_2026-03-30_14-30
 poetry run python -m src.query_runner --mode openai # only query one provider (all|openai|anthropic|google)
 ```
 
-### Step 4: Analyze mentions
+### Step 3: Analyze mentions
 
 ```bash
 poetry run python -m src.cli analyze
@@ -157,5 +141,4 @@ python -m pytest tests/ -v
 
 ## Cost estimates
 
-- Query enhancement: ~$0.01 for 133 queries
 - Running queries: ~$0.10-0.50 per full run
