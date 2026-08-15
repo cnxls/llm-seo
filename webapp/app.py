@@ -35,6 +35,7 @@ class OnboardRequest(BaseModel):
     brand_name: str
     description: str
     language: str
+    market: str
 
 
 class ConfigDelete(BaseModel):
@@ -52,7 +53,7 @@ async def index(request: Request):
 @app.post("/api/onboard")
 async def onboard(data: OnboardRequest):
     try:
-        cfg = await generate_placeholders(data.brand_name, data.description, data.language)
+        cfg = await generate_placeholders(data.brand_name, data.description, data.language, data.market)
         return cfg
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)

@@ -11,9 +11,9 @@ DATA_DIR = Path(__file__).parent.parent/"data"/"entries"
 OUTPUT_PATH = DATA_DIR / "queries.json"
 
 
-def build_prompt(language, description, use_cases, cat_noun, cat_plural, cat_name, cat_desc):
+def build_prompt(language, market, description, use_cases, cat_noun, cat_plural, cat_name, cat_desc):
     usecases = "\n    ".join(f"{i+1}. {uc}" for i, uc in enumerate(use_cases))
-    return f"""You are building a brand visibility monitoring tool for the {language} market.
+    return f"""You are building a brand visibility monitoring tool for the {market} market.
 
   Brand context:
   - Industry: {description}
@@ -59,6 +59,7 @@ def parse_query_list(text):
 async def generate_all_queries():
     cfg = load_brand_config()
     language = cfg['language']
+    market = cfg.get('market') or language
     description = cfg['description']
     placeholders = cfg['placeholders']
     use_cases = placeholders['use_cases']
@@ -79,7 +80,7 @@ async def generate_all_queries():
     id_x = 1
 
     prompts = [
-        build_prompt(language, description, use_cases, cat_noun, cat_plural, cat_name, cat_desc)
+        build_prompt(language, market, description, use_cases, cat_noun, cat_plural, cat_name, cat_desc)
         for (cat_name, cat_desc) in categories
     ]
     provider = CONFIG["llm"]["default_provider"]

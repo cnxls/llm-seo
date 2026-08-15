@@ -58,17 +58,18 @@ def build_competitors(competitors: list, brand_name: str) -> list:
     return result
 
 
-async def generate_placeholders(brand_name: str, description: str, language: str) -> dict:
+async def generate_placeholders(brand_name: str, description: str, language: str, market: str) -> dict:
 
     with open('data/entries/config_template.json', 'r', encoding='utf-8') as file:
         cfg = json.load(file)
-    prompt = f"""You are helping set up a brand visibility analysis tool.                                                                                                                                    
-                                                                                                                                                                                            
-  Given the following brand information, return a JSON object with the fields below.                                                                                                          
-   
-  Brand name: {brand_name}                                                                                                                                                                    
+    prompt = f"""You are helping set up a brand visibility analysis tool.
+
+  Given the following brand information, return a JSON object with the fields below.
+
+  Brand name: {brand_name}
   What they do: {description}
   Output language: {language}
+  Market / localisation: {market} (where this brand actually operates — e.g. "Global", "Ukraine only", "Poland")
 
   Return ONLY a valid JSON object, no other text:
 
@@ -77,7 +78,7 @@ async def generate_placeholders(brand_name: str, description: str, language: str
     "category_noun": "singular noun phrase for one entity in this category (e.g. 'fast food chain', 'construction firm', 'note-taking app') — in {language}",
     "category_plural": "plural of category_noun (e.g. 'fast food chains', 'construction firms', 'note-taking apps') — in {language}",
     "use_cases": ["4 to 5 specific situations where someone would look for this type of brand — in {language}"],
-    "competitors": ["5 to 8 real well-known competitor brand names in this industry — names only, not translated"]
+    "competitors": ["5 to 8 real competitor brand names that actually operate in the given market/localisation ({market}) — names only, not translated"]
   }}"""
     _, client = build_client("anthropic")
     result = await ask_anthropic(client=client, question=prompt, model="claude-sonnet-4-6")
@@ -88,6 +89,7 @@ async def generate_placeholders(brand_name: str, description: str, language: str
     cfg["brand_name"] = brand_name
     cfg["description"] = description
     cfg["language"] = language
+    cfg["market"] = market
     cfg["target"] = {"name": brand_name, "aliases": build_aliases(brand_name)}
     cfg["competitors"] = build_competitors(result["competitors"], brand_name)
     cfg["placeholders"]["category"] = result["category"]

@@ -1,7 +1,8 @@
  {                                                                                                                                                                                                                        
-    "brand_name": "",                                                                                                                                                                                                      
-    "description": "",                                                                                                                                                                                                     
-    "language": "", 
+    "brand_name": "",
+    "description": "",
+    "language": "",
+    "market": "",
     "placeholders": {
       "category": "",
       "category_noun": "",

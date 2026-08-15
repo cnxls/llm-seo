@@ -15,12 +15,13 @@ class TestBuildPrompt:
 
     def test_includes_key_inputs(self):
         prompt = build_prompt(
-            "English", "note-taking apps", ["writing notes", "organizing tasks"],
+            "English", "United States", "note-taking apps", ["writing notes", "organizing tasks"],
             "note-taking app", "note-taking apps", "recommendation",
             "User wants to find the best option in this category"
         )
 
         assert "English" in prompt
+        assert "United States" in prompt
         assert "note-taking apps" in prompt
         assert "note-taking app" in prompt
         assert "writing notes" in prompt
