@@ -230,7 +230,7 @@ export default function HomePage({ onTrackBrand }: HomePageProps) {
         <div className="flex flex-col items-center w-full max-w-2xl px-6 pointer-events-auto">
 
           {/* Wordmark */}
-          <div className="wordmark text-center mb-12" style={{ animationDuration: `1.2s`, animationDelay: `2.2s` }}>
+          <div className="wordmark text-center mt-4 mb-12" style={{ animationDuration: `1.2s`, animationDelay: `2.2s` }}>
             <div className="text-2xl font-bold tracking-[0.06em] text-foreground">LLM SEO Monitor</div>
             <div className="text-xs uppercase tracking-[0.4em] text-muted-foreground mt-1">AI Brand Visibility</div>
           </div>
