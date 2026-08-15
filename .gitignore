@@ -41,3 +41,5 @@ poetry.lock
 
 # -----------------------
 data/results
+data/entries/configs/
+data/entries/queries.json
