@@ -13,7 +13,9 @@ import {
   ConfigItem,
   FullConfig,
   OnboardRequest,
-  OnboardConfig
+  OnboardConfig,
+  CompetitorsRegenerateRequest,
+  BrandEntry
 } from './types';
 
 const BASE_URL = '/api';
@@ -62,6 +64,11 @@ export const api = {
   }),
   
   onboard: (req: OnboardRequest) => fetchApi<OnboardConfig>('/onboard', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req)
+  }),
+  regenerateCompetitors: (req: CompetitorsRegenerateRequest) => fetchApi<{ competitors: BrandEntry[] }>('/onboard/competitors', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(req)

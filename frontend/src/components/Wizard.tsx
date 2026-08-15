@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Target, Play, TrendingUp, X, Check, ChevronRight, AlertCircle, Sparkles } from 'lucide-react';
+import { Target, Play, TrendingUp, X, Check, ChevronRight, AlertCircle, Sparkles, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { api } from '../api';
 import AppLogo from './layout/AppLogo';
@@ -35,6 +35,8 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
 
   const [competitors, setCompetitors] = useState<string[]>([]);
   const [competitorInput, setCompetitorInput] = useState('');
+  const [regeneratingCompetitors, setRegeneratingCompetitors] = useState(false);
+  const [competitorError, setCompetitorError] = useState<string | null>(null);
   const [useCases, setUseCases] = useState<string[]>([]);
   const [useCaseInput, setUseCaseInput] = useState('');
 
@@ -75,6 +77,26 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
     } catch (e: any) {
       setGenerating(false);
       setGenError(e instanceof Error ? e.message : 'Failed to generate config');
+    }
+  };
+
+  const handleRegenerateCompetitors = async () => {
+    setRegeneratingCompetitors(true);
+    setCompetitorError(null);
+    try {
+      const res = await api.regenerateCompetitors({
+        brand_name: brand.trim(),
+        description: description.trim(),
+        language: language.trim() || 'English',
+        market: market.trim() || 'Global',
+        exclude: competitors,
+      });
+      setCompetitors(res.competitors.map(c => c.name));
+      setConfig(cfg => cfg ? { ...cfg, competitors: [...cfg.competitors, ...res.competitors] } : cfg);
+    } catch (e) {
+      setCompetitorError(e instanceof Error ? e.message : 'Failed to regenerate competitors');
+    } finally {
+      setRegeneratingCompetitors(false);
     }
   };
 
@@ -330,9 +352,23 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground flex items-center justify-between">
-                  Competitors
+                  <span className="flex items-center gap-2">
+                    Competitors
+                    <button
+                      type="button"
+                      onClick={handleRegenerateCompetitors}
+                      disabled={regeneratingCompetitors}
+                      className="flex items-center gap-1 text-xs font-normal text-accent hover:text-accent/80 disabled:opacity-50 transition"
+                    >
+                      <RefreshCw size={12} className={regeneratingCompetitors ? 'animate-spin' : ''} />
+                      {regeneratingCompetitors ? 'Regenerating…' : 'Not right? Regenerate'}
+                    </button>
+                  </span>
                   <span className="text-xs text-muted-foreground font-normal">{competitors.length} selected</span>
                 </label>
+                {competitorError && (
+                  <p className="text-xs text-rose-500">{competitorError}</p>
+                )}
                 <div className="flex flex-wrap gap-2 mb-2">
                   {competitors.map((c, i) => (
                     <span key={i} className="bg-accent/15 text-accent border border-accent/30 px-3 py-1 rounded-md text-sm font-medium flex items-center gap-2">

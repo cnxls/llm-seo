@@ -146,6 +146,14 @@ export interface OnboardRequest {
   market: string;
 }
 
+export interface CompetitorsRegenerateRequest {
+  brand_name: string;
+  description: string;
+  language: string;
+  market: string;
+  exclude: string[];
+}
+
 export interface BrandEntry {
   name: string;
   aliases: string[];

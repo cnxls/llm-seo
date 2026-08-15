@@ -11,7 +11,7 @@ from typing import Optional
 from . import data_loader
 from . import run_manager
 from . import query_cache
-from src.onboarding import generate_placeholders
+from src.onboarding import generate_placeholders, regenerate_competitors
 
 app = FastAPI(title="LLM SEO Monitor")
 
@@ -41,6 +41,14 @@ class OnboardRequest(BaseModel):
     market: str
 
 
+class CompetitorsRegenerateRequest(BaseModel):
+    brand_name: str
+    description: str
+    language: str
+    market: str
+    exclude: list[str] = []
+
+
 class ConfigDelete(BaseModel):
     name: str
 
@@ -58,6 +66,17 @@ async def onboard(data: OnboardRequest):
     try:
         cfg = await generate_placeholders(data.brand_name, data.description, data.language, data.market)
         return cfg
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.post("/api/onboard/competitors")
+async def onboard_regenerate_competitors(data: CompetitorsRegenerateRequest):
+    try:
+        competitors = await regenerate_competitors(
+            data.brand_name, data.description, data.language, data.market, data.exclude
+        )
+        return {"competitors": competitors}
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 

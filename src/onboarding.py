@@ -59,6 +59,40 @@ def build_competitors(competitors: list, brand_name: str) -> list:
     return result
 
 
+async def regenerate_competitors(brand_name: str, description: str, language: str, market: str, exclude: list = None) -> list:
+    exclude = [e for e in (exclude or []) if e.strip()]
+    exclude_line = f"\n  Already suggested (do NOT repeat any of these): {', '.join(exclude)}" if exclude else ""
+    prompt = f"""You are finding real competitor brands for a brand visibility analysis tool.
+
+  Brand: {brand_name}
+  What they do: {description}
+  Market / localisation: {market} (where this brand actually operates){exclude_line}
+
+  List 5 to 8 real, currently operating competitor brands that people in {market} would genuinely
+  compare {brand_name} against.
+
+  Rules:
+  - Only real, currently operating brands — no invented or defunct brands
+  - Do not include {brand_name} itself
+  - Do not repeat any brand from the "already suggested" list above
+  - Mix well-known market leaders with closer, more specific alternatives
+  - Names only, not translated
+
+  Return ONLY a JSON array of strings, no other text.
+  Example: ["Brand A", "Brand B"]"""
+    _, client = build_client("anthropic")
+    result = await ask_anthropic(client=client, question=prompt, model="claude-sonnet-4-6")
+    match = re.search(r"\[.*\]", result["text"], re.DOTALL)
+    names = json.loads(match.group(0) if match else result["text"])
+
+    # Prompt instructions aren't guaranteed to be followed — filter defensively
+    # instead of trusting the LLM not to repeat an excluded name.
+    exclude_keys = {e.lower() for e in exclude}
+    names = [n for n in names if n.strip().lower() not in exclude_keys]
+
+    return build_competitors(names, brand_name)
+
+
 async def generate_placeholders(brand_name: str, description: str, language: str, market: str) -> dict:
 
     with open('data/entries/config_template.json', 'r', encoding='utf-8') as file:
@@ -79,7 +113,7 @@ async def generate_placeholders(brand_name: str, description: str, language: str
     "category_noun": "singular noun phrase for one entity in this category (e.g. 'fast food chain', 'construction firm', 'note-taking app') — in {language}",
     "category_plural": "plural of category_noun (e.g. 'fast food chains', 'construction firms', 'note-taking apps') — in {language}",
     "use_cases": ["4 to 5 specific situations where someone would look for this type of brand — in {language}"],
-    "competitors": ["5 to 8 real competitor brand names that actually operate in the given market/localisation ({market}) — names only, not translated"]
+    "competitors": ["5 to 8 real, currently operating competitor brands that people in {market} would genuinely compare {brand_name} against — well-known names only, no invented or defunct brands, do not include {brand_name} itself — names only, not translated"]
   }}"""
     _, client = build_client("anthropic")
 
