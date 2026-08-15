@@ -33,6 +33,31 @@ Return ONLY the translated JSON object, no other text."""
         return templates
 
 
+def build_aliases(name: str) -> list:
+    variants = [name, name.lower(), name.replace(" ", "-"), name.replace(" ", "")]
+    seen = []
+    for v in variants:
+        if v not in seen:
+            seen.append(v)
+    return seen
+
+
+def build_competitors(competitors: list, brand_name: str) -> list:
+    brand_key = brand_name.strip().lower()
+    seen = set()
+    result = []
+    for c in competitors:
+        c = c.strip()
+        if not c:
+            continue
+        key = c.lower()
+        if key == brand_key or key in seen:
+            continue
+        seen.add(key)
+        result.append({"name": c, "aliases": build_aliases(c)})
+    return result
+
+
 async def generate_placeholders(brand_name: str, description: str, language: str) -> dict:
 
     with open('data/entries/config_template.json', 'r', encoding='utf-8') as file:
@@ -63,8 +88,8 @@ async def generate_placeholders(brand_name: str, description: str, language: str
     cfg["brand_name"] = brand_name
     cfg["description"] = description
     cfg["language"] = language
-    cfg["target"] = {"name": brand_name, "aliases": [brand_name]}
-    cfg["competitors"] = [{"name": c, "aliases": [c]} for c in result["competitors"]]
+    cfg["target"] = {"name": brand_name, "aliases": build_aliases(brand_name)}
+    cfg["competitors"] = build_competitors(result["competitors"], brand_name)
     cfg["placeholders"]["category"] = result["category"]
     cfg["placeholders"]["category_noun"] = result["category_noun"]
     cfg["placeholders"]["category_plural"] = result["category_plural"]
