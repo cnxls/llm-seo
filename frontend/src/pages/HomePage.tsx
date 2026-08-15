@@ -254,6 +254,9 @@ export default function HomePage({ onTrackBrand }: HomePageProps) {
                   placeholder="Enter your brand name…"
                   value={brandInput}
                   onChange={e => setBrandInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && brandInput.trim()) onTrackBrand(brandInput);
+                  }}
                   className="w-full bg-card/90 backdrop-blur-xl border border-border focus:border-accent/50 text-foreground text-lg md:text-xl rounded-2xl px-6 py-5 outline-none transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.6)] placeholder:text-muted-foreground"
                 />
               </div>
