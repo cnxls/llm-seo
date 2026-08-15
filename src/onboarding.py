@@ -1,4 +1,5 @@
 from .llm_clients import ask_anthropic, build_client
+import asyncio
 import json
 import re
 from datetime import datetime
@@ -81,8 +82,19 @@ async def generate_placeholders(brand_name: str, description: str, language: str
     "competitors": ["5 to 8 real competitor brand names that actually operate in the given market/localisation ({market}) — names only, not translated"]
   }}"""
     _, client = build_client("anthropic")
-    result = await ask_anthropic(client=client, question=prompt, model="claude-sonnet-4-6")
-    text = result["text"]
+
+    with open(TEMPLATES_PATH, 'r', encoding='utf-8') as file:
+        templates = json.load(file)
+
+    # Placeholder generation and template translation are independent LLM
+    # calls (translation only needs `language`, not the placeholder result),
+    # so run them concurrently instead of one after the other.
+    placeholders_result, translated_templates = await asyncio.gather(
+        ask_anthropic(client=client, question=prompt, model="claude-sonnet-4-6"),
+        translate_templates(client, templates, language),
+    )
+
+    text = placeholders_result["text"]
     match = re.search(r"\{.*\}", text, re.DOTALL)
     result = json.loads(match.group(0) if match else text)
 
@@ -96,10 +108,7 @@ async def generate_placeholders(brand_name: str, description: str, language: str
     cfg["placeholders"]["category_noun"] = result["category_noun"]
     cfg["placeholders"]["category_plural"] = result["category_plural"]
     cfg["placeholders"]["use_cases"] = result["use_cases"]
-
-    with open(TEMPLATES_PATH, 'r', encoding='utf-8') as file:
-        templates = json.load(file)
-    cfg["templates"] = await translate_templates(client, templates, language)
+    cfg["templates"] = translated_templates
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     run_dir = os.path.join(OUTPUT_PATH, f'config_{timestamp}.json')
