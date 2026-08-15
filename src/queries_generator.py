@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from .config_loader import load_brand_config
+from .config_loader import load_brand_config, CONFIG
 import asyncio as aio
 from .llm_clients import ask_provider
 
@@ -82,7 +82,8 @@ async def generate_all_queries():
         build_prompt(language, description, use_cases, cat_noun, cat_plural, cat_name, cat_desc)
         for (cat_name, cat_desc) in categories
     ]
-    responses = await aio.gather(*(ask_provider("openai", prompt) for prompt in prompts))
+    provider = CONFIG["llm"]["default_provider"]
+    responses = await aio.gather(*(ask_provider(provider, prompt) for prompt in prompts))
 
     for (cat_name, cat_desc), response in zip(categories, responses):
         queries = parse_query_list(response['text'])
