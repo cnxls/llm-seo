@@ -41,12 +41,13 @@ async def execute_run(query_ids=None):
         active_run["run_name"] = run_name
         active_run["total"] = len(generated_qs)
 
-        batch_size = CONFIG["query_runner"]["batch_size"]
         parallel_workers = CONFIG["query_runner"]["parallel_workers"]
         semaphore = asyncio.Semaphore(parallel_workers)
 
         async def process_one(query):
             async with semaphore:
+                if active_run["cancel_requested"]:
+                    return
                 active_run['current_query'] = query['query']
                 responses = await ask_all_providers(query['query'])
 
@@ -57,11 +58,7 @@ async def execute_run(query_ids=None):
 
                 active_run['completed'] += 1
 
-        for i in range(0, len(generated_qs), batch_size):
-            if active_run["cancel_requested"]:
-                break
-            batch = generated_qs[i:i + batch_size]
-            await asyncio.gather(*(process_one(query) for query in batch))
+        await asyncio.gather(*(process_one(query) for query in generated_qs))
 
         active_run['current_query'] = 'Analyzing results...'
         generate_summary(run_dir=run_dir)

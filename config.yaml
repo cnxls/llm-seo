@@ -19,5 +19,4 @@ llm:
       model: gemini-3-flash-preview
 
 query_runner:
-  batch_size: 5
   parallel_workers: 3
