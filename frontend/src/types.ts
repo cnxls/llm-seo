@@ -139,6 +139,7 @@ export interface OnboardRequest {
   brand_name: string;
   description: string;
   language: string;
+  market: string;
 }
 
 export interface BrandEntry {
@@ -150,6 +151,7 @@ export interface OnboardConfig {
   brand_name: string;
   description: string;
   language: string;
+  market: string;
   placeholders: {
     category: string;
     category_noun: string;

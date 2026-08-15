@@ -24,6 +24,7 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
   const [brand, setBrand] = useState(initialBrand || '');
   const [description, setDescription] = useState('');
   const [language, setLanguage] = useState('English');
+  const [market, setMarket] = useState('');
   const [aliases, setAliases] = useState<string[]>([]);
   const [aliasInput, setAliasInput] = useState('');
 
@@ -64,6 +65,7 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
         brand_name: brand.trim(),
         description: description.trim(),
         language: language.trim() || 'English',
+        market: market.trim() || 'Global',
       });
       setConfig(result);
       setCompetitors(result.competitors.map(c => c.name));
@@ -218,6 +220,21 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
                 />
               </div>
 
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Market
+                  <span className="block text-xs text-muted-foreground font-normal mt-1">
+                    Where the brand actually operates — "Global" (McDonald's), a single country (Склоресурс, Ukraine only), or a region (Pasibus, Poland).
+                  </span>
+                </label>
+                <input
+                  placeholder="e.g. Global, Ukraine, Poland"
+                  value={market}
+                  onChange={e => setMarket(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                />
+              </div>
+
               <div className="space-y-2 pt-4">
                 <label className="text-sm font-medium text-foreground">
                   Other spellings (optional)
@@ -355,7 +372,7 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-3 pt-2">
+              <div className="grid grid-cols-4 gap-3 pt-2">
                 <div className="bg-muted/30 rounded-lg p-3 text-center border border-border">
                   <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Category</div>
                   <div className="text-sm font-semibold text-foreground truncate" title={config.placeholders.category}>{config.placeholders.category}</div>
@@ -367,6 +384,10 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
                 <div className="bg-muted/30 rounded-lg p-3 text-center border border-border">
                   <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Language</div>
                   <div className="text-sm font-semibold text-foreground truncate" title={config.language}>{config.language}</div>
+                </div>
+                <div className="bg-muted/30 rounded-lg p-3 text-center border border-border">
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Market</div>
+                  <div className="text-sm font-semibold text-foreground truncate" title={config.market}>{config.market}</div>
                 </div>
               </div>
             </div>
