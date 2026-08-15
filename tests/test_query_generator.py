@@ -1,92 +1,100 @@
+
+# Tests for queries_generator.py
+
+import asyncio
+import json
 import pytest
-from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
 
 from src.queries_generator import (
-    load_templates, load_brands, get_use_cases, get_placeholders,
-    fill_single_template, generate_queries_from_template,
-    generate_all_queries
+    build_prompt, parse_query_list, generate_all_queries, save_queries
 )
 
 
-class TestGetPlaceholders:
+class TestBuildPrompt:
 
-    def test_finds_placeholders(self):
-        assert get_placeholders("{brand1} vs {brand2}") == ["brand1", "brand2"]
-        assert get_placeholders("No placeholders") == []
-        assert get_placeholders("{s} and {s}") == ["s", "s"]
-
-
-class TestFillSingleTemplate:
-
-    def test_replaces_variables(self):
-        result = fill_single_template("{brand1} vs {brand2}", {"brand1": "A", "brand2": "B"})
-        assert result == "A vs B"
-
-    def test_leaves_unknown_placeholders(self):
-        result = fill_single_template("{brand1} vs {unknown}", {"brand1": "A"})
-        assert result == "A vs {unknown}"
-
-
-class TestLoadBrands:
-
-    def test_returns_target_and_competitors(self):
-        target, competitors = load_brands()
-
-        assert isinstance(target, list) and len(target) > 0
-        assert isinstance(competitors, dict)
-        for _, aliases in competitors.items():
-            assert isinstance(aliases, list)
-
-
-class TestLoadTemplates:
-
-    def test_returns_expected_structure(self):
-        templates = load_templates()
-
-        assert all(k in templates for k in ["metadata", "placeholders", "templates"])
-        assert len(templates["templates"]) > 0
-
-    def test_raises_on_missing_file(self):
-        with patch('src.queries_generator.TEMPLATES_PATH', Path("nonexistent.json")):
-            with pytest.raises(FileNotFoundError):
-                load_templates()
-
-
-class TestGetUseCases:
-
-    def test_returns_list_of_strings(self):
-        use_cases = get_use_cases()
-        assert isinstance(use_cases, list) and len(use_cases) > 0
-        assert all(isinstance(c, str) for c in use_cases)
-
-
-class TestGenerateQueriesFromTemplate:
-
-    def test_generates_queries(self):
-        results = generate_queries_from_template(
-            "What are the best {category} apps?",
-            {"category": "note-taking", "use_cases": []}
+    def test_includes_key_inputs(self):
+        prompt = build_prompt(
+            "English", "note-taking apps", ["writing notes", "organizing tasks"],
+            "note-taking app", "note-taking apps", "recommendation",
+            "User wants to find the best option in this category"
         )
-        assert results == ["What are the best note-taking apps?"]
 
-    def test_fills_all_placeholders(self):
-        results = generate_queries_from_template(
-            "{brand1} vs {brand2} for {use_case}",
-            {"category": "test", "use_cases": ["work"]}
-        )
-        for query in results:
-            assert "{" not in query and "}" not in query
+        assert "English" in prompt
+        assert "note-taking apps" in prompt
+        assert "note-taking app" in prompt
+        assert "writing notes" in prompt
+        assert "organizing tasks" in prompt
+        assert "recommendation" in prompt
+        assert "User wants to find the best option in this category" in prompt
+
+
+class TestParseQueryList:
+
+    def test_parses_valid_json_array(self):
+        result = parse_query_list('["Question one?", "Question two?"]')
+        assert result == ["Question one?", "Question two?"]
+
+    def test_strips_json_fence(self):
+        text = '```json\n["Question one?", "Question two?"]\n```'
+        result = parse_query_list(text)
+        assert result == ["Question one?", "Question two?"]
+
+    def test_non_list_json_returns_empty(self):
+        result = parse_query_list('{"not": "a list"}')
+        assert result == []
+
+    def test_invalid_json_returns_empty_and_logs_warning(self, caplog):
+        with caplog.at_level("WARNING"):
+            result = parse_query_list("not valid json at all")
+        assert result == []
+        assert len(caplog.records) > 0
 
 
 class TestGenerateAllQueries:
 
-    def test_returns_valid_queries(self):
-        queries = generate_all_queries()
+    def test_generates_sequential_queries_per_category(self):
+        fake_config = {
+            "language": "English",
+            "description": "note-taking apps",
+            "placeholders": {
+                "use_cases": ["writing notes"],
+                "category_noun": "note-taking app",
+                "category_plural": "note-taking apps",
+            },
+        }
 
-        assert len(queries) > 0
-        assert all(k in queries[0] for k in ["id", "category", "query"])
-        assert all(q["id"] == i + 1 for i, q in enumerate(queries))
-        assert all("{" not in q["query"] for q in queries)
+        with patch("src.queries_generator.load_brand_config", return_value=fake_config), \
+             patch("src.queries_generator.ask_provider", new_callable=AsyncMock) as mock_ask:
+            mock_ask.return_value = {"text": '["Query A?", "Query B?"]'}
+
+            queries = asyncio.run(generate_all_queries())
+
+        assert mock_ask.call_count == 7
+
+        ids = [q["id"] for q in queries]
+        assert ids == list(range(1, len(queries) + 1))
+
+        for q in queries:
+            assert set(["id", "category", "query"]).issubset(q.keys())
 
 
+class TestSaveQueries:
+
+    def test_writes_expected_json_structure(self, tmp_path):
+        fake_config = {
+            "target": {"name": "Obsidian"},
+            "competitors": [{"name": "Notion"}, {"name": "Roam"}],
+        }
+        queries = [{"id": 1, "category": "recommendation", "query": "What is the best app?"}]
+        output_path = tmp_path / "queries.json"
+
+        with patch("src.queries_generator.load_brand_config", return_value=fake_config):
+            save_queries(queries, queries_path=output_path)
+
+        with open(output_path, encoding="utf-8") as f:
+            data = json.load(f)
+
+        assert data["brand"] == "Obsidian"
+        assert data["competitors"] == ["Notion", "Roam"]
+        assert data["queries"] == queries
