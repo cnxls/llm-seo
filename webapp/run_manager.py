@@ -1,4 +1,5 @@
-from src.queries_generator import generate_all_queries, save_queries
+from src.queries_generator import save_queries
+from . import query_cache
 from src.query_runner import QueryOutput, generate_summary
 from datetime import datetime
 from src.llm_clients import ask_all_providers
@@ -28,7 +29,7 @@ async def execute_run(query_ids=None):
     active_run["cancel_requested"] = False
     
     try:
-        generated_qs = await generate_all_queries()
+        generated_qs = await query_cache.get_queries()
         save_queries(generated_qs)
         
         if query_ids:                                                                                                                                                                                                                                                                        

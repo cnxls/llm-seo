@@ -10,15 +10,17 @@ from typing import Optional
 
 from . import data_loader
 from . import run_manager
-from src.queries_generator import generate_all_queries
+from . import query_cache
 from src.onboarding import generate_placeholders
 
 app = FastAPI(title="LLM SEO Monitor")
 
 
 class BrandsUpdate(BaseModel):
-    target: dict
-    competitors: list
+    target: str | dict
+    target_aliases: list[str] = []
+    competitors: list = []
+    competitor_aliases: dict[str, list[str]] = {}
 
 
 class TemplatesUpdate(BaseModel):
@@ -98,7 +100,7 @@ async def stop_run():
 
 @app.get("/api/queries/preview")
 async def preview_queries():
-    queries = await generate_all_queries()
+    queries = await query_cache.get_queries()
     return {"queries": queries, "total": len(queries)}
 
 
