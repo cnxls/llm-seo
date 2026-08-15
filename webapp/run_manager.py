@@ -1,10 +1,12 @@
 from src.queries_generator import generate_all_queries, save_queries
-from src.query_runner import QueryOutput, generate_summary 
+from src.query_runner import QueryOutput, generate_summary
 from datetime import datetime
 from src.llm_clients import ask_all_providers
 from src.mention_analyzer import load_answers, save_analysis, MentionsAnalyzer
+from src.config_loader import CONFIG
 import os
 import json
+import asyncio
 
 active_run = {
     "running": False,
@@ -39,19 +41,27 @@ async def execute_run(query_ids=None):
         active_run["run_name"] = run_name
         active_run["total"] = len(generated_qs)
 
-        for query in generated_qs:
+        batch_size = CONFIG["query_runner"]["batch_size"]
+        parallel_workers = CONFIG["query_runner"]["parallel_workers"]
+        semaphore = asyncio.Semaphore(parallel_workers)
+
+        async def process_one(query):
+            async with semaphore:
+                active_run['current_query'] = query['query']
+                responses = await ask_all_providers(query['query'])
+
+                output = QueryOutput(query['id'], query['query'], query['category'], responses)
+                output_path = os.path.join(run_dir, f"output_{query['id']}.json")
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(output.to_dict(), f, indent=4, ensure_ascii=False)
+
+                active_run['completed'] += 1
+
+        for i in range(0, len(generated_qs), batch_size):
             if active_run["cancel_requested"]:
                 break
-            
-            active_run['current_query'] = query['query']
-            responses = await ask_all_providers(query['query'])
-            
-            output = QueryOutput(query['id'], query['query'], query['category'], responses)
-            output_path = os.path.join(run_dir, f"output_{query['id']}.json")
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(output.to_dict(), f, indent=4, ensure_ascii=False)
-
-            active_run['completed'] += 1
+            batch = generated_qs[i:i + batch_size]
+            await asyncio.gather(*(process_one(query) for query in batch))
 
         active_run['current_query'] = 'Analyzing results...'
         generate_summary(run_dir=run_dir)
