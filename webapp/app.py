@@ -237,6 +237,14 @@ async def get_config(name: str):
     return config
 
 
+@app.post("/api/configs/{name}/activate")
+async def activate_config(name: str):
+    if not data_loader.activate_config(name):
+        return JSONResponse({"error": "Config not found"}, status_code=404)
+    query_cache.invalidate()
+    return {"status": "ok"}
+
+
 @app.delete("/api/configs/{name}")
 async def delete_config(name: str):
     data_loader.delete_config(name)

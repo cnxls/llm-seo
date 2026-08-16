@@ -1,5 +1,7 @@
 import json
+import os
 import re
+import time
 from pathlib import Path
 from src.config_loader import load_brand_config
 
@@ -382,6 +384,19 @@ def load_config_by_name(name):
         },
         "templates": load_templates(),
     }
+
+
+def activate_config(name):
+    path = CONFIGS_DIR / f"{name}.json"
+    if not path.exists():
+        return False
+    # load_brand_config() picks the config file with the newest mtime, so bumping
+    # this one past every sibling makes it active without rewriting its contents.
+    # The +1 matters because clock granularity can make two touches tie.
+    newest = max(f.stat().st_mtime for f in CONFIGS_DIR.glob("*.json"))
+    stamp = max(time.time(), newest + 1)
+    os.utime(path, (stamp, stamp))
+    return True
 
 
 def delete_config(name):
