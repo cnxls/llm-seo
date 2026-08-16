@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Rocket, X } from 'lucide-react';
 import { api } from '../api';
-import { PreviewQuery } from '../types';
+import { PreviewQuery, RunSummaryData } from '../types';
 import ProviderCard from '../components/run/ProviderCard';
 import CompletionCard from '../components/run/CompletionCard';
 import {
@@ -34,7 +34,7 @@ function QueryList({
   const visible = filter === 'all' ? queries : queries.filter(q => q.category === filter);
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col h-[560px]">
+    <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col h-[560px] xl:h-full">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-muted/20">
         <div className="flex gap-2">
           <button onClick={onSelectAll} disabled={disabled}
@@ -163,7 +163,7 @@ export default function RunPage() {
   const [runError, setRunError] = useState<string | null>(null);
 
   // Run naming
-  const [pastRunCount, setPastRunCount] = useState(0);
+  const [pastRuns, setPastRuns] = useState<RunSummaryData[]>([]);
   const [runLabel, setRunLabel] = useState('');
   const [runLabelTouched, setRunLabelTouched] = useState(false);
   const [launchedLabel, setLaunchedLabel] = useState('');
@@ -218,9 +218,12 @@ export default function RunPage() {
       );
     }).catch(console.error);
 
-    api.getRuns().then(runs => setPastRunCount(runs.length)).catch(console.error);
+    api.getRuns().then(setPastRuns).catch(console.error);
   }, []);
 
+  // Runs are numbered per brand — past runs from other brands (and legacy runs
+  // with no stored brand) don't advance this brand's counter.
+  const pastRunCount = pastRuns.filter(r => !!r.brand && r.brand === targetBrand).length;
   const defaultRunLabel = `${targetBrand || 'Run'} #${pastRunCount + 1}`;
   useEffect(() => {
     if (!runLabelTouched) setRunLabel(defaultRunLabel);
@@ -369,7 +372,7 @@ export default function RunPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fade-in-up">
+    <div className="flex flex-col h-full gap-6 animate-fade-in-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -393,8 +396,8 @@ export default function RunPage() {
 
       {/* ═══ IDLE PHASE ═══ */}
       {phase === 'idle' && (
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-fade-in-up">
-          <div className="xl:col-span-2">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-fade-in-up flex-1 min-h-0">
+          <div className="xl:col-span-2 min-h-0">
             <QueryList
               queries={queries}
               selectedIds={selectedIds}
@@ -404,9 +407,9 @@ export default function RunPage() {
               flyingId={null}
             />
           </div>
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4 h-[560px] xl:h-full min-h-0">
             <ReadyTray count={selectedIds.size} total={queries.length} ticking={false} />
-            <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+            <div className="bg-card border border-border rounded-xl p-5 flex flex-col gap-4 flex-1">
               <div className="space-y-2">
                 <label htmlFor="run-label" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Run name
@@ -420,7 +423,7 @@ export default function RunPage() {
                   className="flex h-10 w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
                 />
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground flex-1">
                 Selected queries will be sent to all 3 providers — you'll see each response stream in.
               </div>
               <LaunchButton disabled={!selectedIds.size} onClick={launch} count={selectedIds.size} />
@@ -431,8 +434,8 @@ export default function RunPage() {
 
       {/* ═══ LAUNCHING PHASE ═══ */}
       {phase === 'launching' && (
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-fade-in-up">
-          <div className="xl:col-span-2">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-fade-in-up flex-1 min-h-0">
+          <div className="xl:col-span-2 min-h-0">
             <QueryList
               queries={queries}
               selectedIds={selectedIds}

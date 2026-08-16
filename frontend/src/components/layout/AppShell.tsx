@@ -10,12 +10,13 @@ interface AppShellProps {
 export default function AppShell({ isLightMode, onToggleTheme, children }: AppShellProps) {
   const location = useLocation();
   const isHome = location.pathname === '/';
-  
+  const isRun = location.pathname === '/run';
+
   return (
     <div className="min-h-screen bg-background text-foreground flex">
       <Sidebar isLightMode={isLightMode} onToggleTheme={onToggleTheme} />
       <main className={`flex-1 ml-[60px] bg-background overflow-x-hidden min-h-screen ${isHome ? '' : 'p-6'}`}>
-        <div className={isHome ? 'h-full' : 'max-w-7xl mx-auto space-y-6'}>
+        <div className={isHome ? 'h-full' : isRun ? 'h-full flex flex-col w-full' : 'max-w-7xl mx-auto space-y-6'}>
           {children}
         </div>
       </main>

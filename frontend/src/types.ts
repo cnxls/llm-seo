@@ -1,6 +1,7 @@
 export interface RunSummaryData {
   name: string;
   label: string;
+  brand: string | null;
   query_count: number;
   has_analysis: boolean;
 }
