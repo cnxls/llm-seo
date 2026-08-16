@@ -22,9 +22,13 @@ active_run = {
 }
 
 
-def _default_label():
-    brand_name = data_loader.load_brands().get("target") or "Run"
-    existing = len(data_loader.list_runs())
+def _current_brand():
+    return data_loader.load_brands().get("target") or "Run"
+
+
+def _default_label(brand_name=None):
+    brand_name = brand_name or _current_brand()
+    existing = sum(1 for r in data_loader.list_runs() if r.get("brand") == brand_name)
     return f"{brand_name} #{existing + 1}"
 
 
@@ -50,9 +54,10 @@ async def execute_run(query_ids=None, run_label=None):
         run_dir = os.path.join("data/results", run_name)
         os.makedirs(run_dir, exist_ok=True)
 
-        label = (run_label or "").strip() or _default_label()
+        brand_name = _current_brand()
+        label = (run_label or "").strip() or _default_label(brand_name)
         with open(os.path.join(run_dir, "meta.json"), "w", encoding="utf-8") as f:
-            json.dump({"label": label}, f, indent=2, ensure_ascii=False)
+            json.dump({"label": label, "brand": brand_name}, f, indent=2, ensure_ascii=False)
 
         active_run["run_name"] = run_name
         active_run["label"] = label
