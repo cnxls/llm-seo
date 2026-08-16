@@ -74,6 +74,7 @@ export default function SettingsPage() {
   const handleLoadConfig = async (name: string) => {
     setLoading(true);
     try {
+      await api.activateConfig(name);
       const full = await api.getConfig(name);
       reset(full.brands);
       setTemplates(full.templates);

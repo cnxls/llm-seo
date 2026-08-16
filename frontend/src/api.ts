@@ -77,6 +77,7 @@ export const api = {
   getConfigs: () => fetchApi<ConfigItem[]>('/configs'),
   getConfig: (name: string) => fetchApi<FullConfig>(`/configs/${name}`),
   deleteConfig: (name: string) => fetchApi<{ status: string }>(`/configs/${name}`, { method: 'DELETE' }),
+  activateConfig: (name: string) => fetchApi<{ status: string }>(`/configs/${name}/activate`, { method: 'POST' }),
 
   subscribeToActiveRun: (onMessage: (msg: SSEMessage) => void, onError: (err: unknown) => void) => {
     let hasStarted = false;
