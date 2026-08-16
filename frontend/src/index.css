@@ -189,12 +189,14 @@
   12%  { opacity: 1; }
   25%  { transform: translate(-50%, -50%) scale(0.75)  rotate(-3deg); opacity: 1; }
   42%  { transform: translate(-50%, -50%) scale(0.40)  rotate(0deg);  opacity: 1; }
-  55%  { transform: translate(-50%, -50%) scale(0.1667) rotate(0deg); opacity: 1; }
-  100% { transform: translate(-50%, calc(-50% - 190px)) scale(0.1667); opacity: 1; }
+  55%  { transform: translate(-50%, -50%) scale(0.19) rotate(0deg); opacity: 1; }
+  100% { transform: translate(-50%, calc(-50% - 270px)) scale(0.19); opacity: 1; }
 }
 .logo-journey {
   position: absolute;
-  left: 50%; top: 50%;
+  /* -30px compensates for AppShell's 60px sidebar so this centers on the
+     actual window, not just the pane to the right of the sidebar. */
+  left: calc(50% - 30px); top: 50%;
   transform-origin: center center;
   will-change: transform, opacity;
   animation: logoJourney 3.0s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -203,8 +205,8 @@
 
 .logo-rest {
   position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, calc(-50% - 190px)) scale(0.1667);
+  left: calc(50% - 30px); top: 50%;
+  transform: translate(-50%, calc(-50% - 270px)) scale(0.19);
   transform-origin: center center;
   filter: drop-shadow(0 15px 30px hsla(0,0%,0%,0.5));
   will-change: transform;
@@ -238,7 +240,7 @@
 }
 .ambient-glow {
   position: absolute;
-  left: 50%; top: 50%;
+  left: calc(50% - 30px); top: 50%;
   width: 800px; height: 800px;
   margin-left: -400px; margin-top: -400px;
   background: radial-gradient(circle, hsla(104,30%,50%,0.18), transparent 60%);

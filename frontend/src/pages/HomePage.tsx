@@ -61,9 +61,12 @@ export default function HomePage({ onTrackBrand }: HomePageProps) {
     let points: any[] = [];
     let cols = 0;
     let rows = 0;
-    const spacing = 75; 
+    const spacing = 75;
     const mouse = { x: -1000, y: -1000 };
-    const magneticRadius = 300; 
+    // Falloff scale for cursor influence — not a hard cutoff, just how fast
+    // the effect decays with distance. Every point feels the cursor a little;
+    // nearby points feel it a lot.
+    const falloffRadius = 260;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -79,7 +82,12 @@ export default function HomePage({ onTrackBrand }: HomePageProps) {
           const offsetY = (Math.random() - 0.5) * spacing * 0.9;
           const baseX = (i - 1) * spacing + offsetX;
           const baseY = (j - 1) * spacing + offsetY;
-          colArray.push({ baseX, baseY, x: baseX, y: baseY, vx: 0, vy: 0 });
+          colArray.push({
+            baseX, baseY, x: baseX, y: baseY, vx: 0, vy: 0,
+            // Wander target: a slowly-changing resting offset, not per-frame
+            // noise — staggered start so points don't shift in unison.
+            wanderX: 0, wanderY: 0, nextWanderAt: Math.random() * 3000,
+          });
         }
         points.push(colArray);
       }
@@ -97,33 +105,41 @@ export default function HomePage({ onTrackBrand }: HomePageProps) {
     let raf: number;
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const nowMs = performance.now();
 
       for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
           const p = points[i][j];
-          const dx = mouse.x - p.baseX;
-          const dy = mouse.y - p.baseY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          
-          let targetX = p.baseX;
-          let targetY = p.baseY;
 
-          if (dist < magneticRadius) {
-            // Repel effect: push nodes away from the mouse
-            const force = Math.pow(1 - dist / magneticRadius, 2) * 60;
-            targetX -= (dx / dist) * force;
-            targetY -= (dy / dist) * force;
+          // Every couple of seconds, pick a new small resting offset. The
+          // spring below eases toward it smoothly — no per-frame randomness,
+          // so there's no flicker, just slow, wandering motion.
+          if (nowMs >= p.nextWanderAt) {
+            p.wanderX = (Math.random() - 0.5) * 10;
+            p.wanderY = (Math.random() - 0.5) * 10;
+            p.nextWanderAt = nowMs + 2200 + Math.random() * 2600;
           }
 
-          // Slightly stiffer spring & more friction for a clean snap-back
-          const spring = 0.06;
-          const friction = 0.75;
-          
+          const dx = mouse.x - p.baseX;
+          const dy = mouse.y - p.baseY;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+
+          // Continuous exponential falloff — every point is pushed a little,
+          // points near the cursor are pushed a lot. No hard radius cutoff.
+          const force = Math.exp(-dist / falloffRadius) * 60;
+          const targetX = p.baseX + p.wanderX - (dx / dist) * force;
+          const targetY = p.baseY + p.wanderY - (dy / dist) * force;
+
+          // Critically damped — eases to target smoothly with no overshoot
+          // or oscillation, so motion reads as smooth drift, not a wobble.
+          const spring = 0.05;
+          const friction = 0.65;
+
           p.vx += (targetX - p.x) * spring;
           p.vy += (targetY - p.y) * spring;
           p.vx *= friction;
           p.vy *= friction;
-          
+
           p.x += p.vx;
           p.y += p.vy;
         }
@@ -143,15 +159,13 @@ export default function HomePage({ onTrackBrand }: HomePageProps) {
             const dx = mouse.x - cx;
             const dy = mouse.y - cy;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            let alpha = 0;
-            let strokeAlpha = 0.05;
-            if (dist < magneticRadius) {
-               const intensity = Math.pow(1 - dist / magneticRadius, 1.4);
-               alpha = 0.35 * intensity; 
-               strokeAlpha = 0.05 + (0.4 * intensity);
-            }
-            
+
+            // Tighter falloff than the position push, so the glow reads as
+            // a smaller halo around the cursor rather than the full radius.
+            const intensity = Math.exp(-dist / (falloffRadius * 0.45));
+            const alpha = 0.35 * intensity;
+            const strokeAlpha = 0.05 + 0.4 * intensity;
+
             ctx.beginPath();
             ctx.moveTo(tri[0].x, tri[0].y);
             ctx.lineTo(tri[1].x, tri[1].y);
@@ -226,13 +240,16 @@ export default function HomePage({ onTrackBrand }: HomePageProps) {
       )}
 
       {/* Hero column */}
-      <div className="absolute inset-0 z-10 flex flex-col items-center pointer-events-none" style={{ paddingTop: 'calc(50vh - 140px)' }}>
+      {/* translateX(-30px) compensates for AppShell's 60px sidebar so this
+          centers on the actual window, not just the pane right of the sidebar. */}
+      {/* -220px = old -140px shifted up by the same 80px the logo moves, so the gap between them is unchanged */}
+      <div className="absolute inset-0 z-10 flex flex-col items-center pointer-events-none" style={{ paddingTop: 'calc(50vh - 220px)', transform: 'translateX(-30px)' }}>
         <div className="flex flex-col items-center w-full max-w-2xl px-6 pointer-events-auto">
 
           {/* Wordmark */}
           <div className="wordmark text-center mt-4 mb-12" style={{ animationDuration: `1.2s`, animationDelay: `2.2s` }}>
-            <div className="text-2xl font-bold tracking-[0.06em] text-foreground">LLM SEO Monitor</div>
-            <div className="text-xs uppercase tracking-[0.4em] text-muted-foreground mt-1">AI Brand Visibility</div>
+            <div className="text-3xl font-bold tracking-[0.06em] text-foreground">LLM SEO Monitor</div>
+            <div className="text-sm uppercase tracking-[0.4em] text-muted-foreground mt-1">AI Brand Visibility</div>
           </div>
 
           {/* Content — typewriter + input */}
