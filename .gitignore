@@ -43,3 +43,4 @@ poetry.lock
 data/results
 data/entries/configs/
 data/entries/queries.json
+data/entries/query_cache.json
