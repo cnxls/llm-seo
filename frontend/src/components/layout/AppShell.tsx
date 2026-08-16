@@ -15,7 +15,8 @@ export default function AppShell({ isLightMode, onToggleTheme, children }: AppSh
   return (
     <div className="min-h-screen bg-background text-foreground flex">
       <Sidebar isLightMode={isLightMode} onToggleTheme={onToggleTheme} />
-      <main className={`flex-1 ml-[60px] bg-background overflow-x-hidden min-h-screen ${isHome ? '' : 'p-6'}`}>
+      {/* /run needs a viewport-capped, non-scrolling main so QueryList's own overflow-y-auto can scroll internally; below xl the idle-phase grid stacks and needs normal page scroll instead */}
+      <main className={`flex-1 ml-[60px] bg-background overflow-x-hidden h-screen ${isRun ? 'overflow-y-auto xl:overflow-hidden' : 'overflow-y-auto'} ${isHome ? '' : 'p-6'}`}>
         <div className={isHome ? 'h-full' : isRun ? 'h-full flex flex-col w-full' : 'max-w-7xl mx-auto space-y-6'}>
           {children}
         </div>

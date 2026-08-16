@@ -396,8 +396,8 @@ export default function RunPage() {
 
       {/* ═══ IDLE PHASE ═══ */}
       {phase === 'idle' && (
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-fade-in-up flex-1 min-h-0">
-          <div className="xl:col-span-2 min-h-0">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-fade-in-up flex-1 xl:min-h-0">
+          <div className="xl:col-span-2 xl:min-h-0">
             <QueryList
               queries={queries}
               selectedIds={selectedIds}
@@ -434,8 +434,8 @@ export default function RunPage() {
 
       {/* ═══ LAUNCHING PHASE ═══ */}
       {phase === 'launching' && (
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-fade-in-up flex-1 min-h-0">
-          <div className="xl:col-span-2 min-h-0">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-fade-in-up flex-1 xl:min-h-0">
+          <div className="xl:col-span-2 xl:min-h-0">
             <QueryList
               queries={queries}
               selectedIds={selectedIds}
