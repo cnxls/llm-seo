@@ -10,6 +10,7 @@ previous result and any config edit forces a fresh generation.
 
 import asyncio
 import json
+from pathlib import Path
 
 from src.config_loader import load_brand_config
 from src.queries_generator import generate_all_queries
@@ -20,6 +21,34 @@ _cache = {
 }
 
 _lock = asyncio.Lock()
+
+# The in-process cache is empty after every server restart (and every --reload
+# reload), which made the first page load pay the full ~6s generation again even
+# though nothing about the brand config had changed. Mirror the cache to disk so
+# a restart reuses the previous result.
+CACHE_PATH = Path(__file__).resolve().parent.parent / "data" / "entries" / "query_cache.json"
+
+
+def _read_disk_cache(fingerprint):
+    """Queries previously generated for this fingerprint, or None."""
+    try:
+        with CACHE_PATH.open("r", encoding="utf-8") as fh:
+            stored = json.load(fh)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return None
+    if stored.get("fingerprint") != fingerprint:
+        return None
+    queries = stored.get("queries")
+    return queries or None
+
+
+def _write_disk_cache(fingerprint, queries):
+    try:
+        CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with CACHE_PATH.open("w", encoding="utf-8") as fh:
+            json.dump({"fingerprint": fingerprint, "queries": queries}, fh, indent=2, ensure_ascii=False)
+    except OSError:
+        pass
 
 
 def compute_fingerprint(cfg=None):
@@ -45,7 +74,11 @@ async def get_queries():
         if fingerprint == _cache["fingerprint"] and _cache["queries"] is not None:
             return _cache["queries"]
 
-        queries = await generate_all_queries()
+        queries = _read_disk_cache(fingerprint)
+        if queries is None:
+            queries = await generate_all_queries()
+            _write_disk_cache(fingerprint, queries)
+
         _cache["fingerprint"] = fingerprint
         _cache["queries"] = queries
         return queries
@@ -55,3 +88,7 @@ def invalidate():
     """Drop the cached queries (next call regenerates)."""
     _cache["fingerprint"] = None
     _cache["queries"] = None
+    try:
+        CACHE_PATH.unlink()
+    except OSError:
+        pass

@@ -9,15 +9,25 @@ RESULTS_DIR = DATA_DIR / "results"
 ENTRIES_DIR = DATA_DIR / "entries"
 
 
-def _read_run_label(run_dir):
+def _read_run_meta(run_dir):
     meta_path = run_dir / "meta.json"
     if meta_path.exists():
         try:
             with open(meta_path, "r", encoding="utf-8") as f:
-                return json.load(f).get("label") or run_dir.name
+                meta = json.load(f)
+            return meta if isinstance(meta, dict) else {}
         except (json.JSONDecodeError, OSError):
-            return run_dir.name
-    return run_dir.name
+            return {}
+    return {}
+
+
+def _read_run_label(run_dir):
+    return _read_run_meta(run_dir).get("label") or run_dir.name
+
+
+def _read_run_brand(run_dir):
+    """Brand this run was executed for, or None for runs created before it was stored."""
+    return _read_run_meta(run_dir).get("brand") or None
 
 
 def get_run_label(run_name):
@@ -35,9 +45,11 @@ def list_runs():
         output_files = list(d.glob("output_*.json"))
         if len(output_files) == 0:
             continue
+        meta = _read_run_meta(d)
         runs.append({
             "name": d.name,
-            "label": _read_run_label(d),
+            "label": meta.get("label") or d.name,
+            "brand": meta.get("brand") or None,
             "query_count": len(output_files),
             "has_analysis": (d / "analysis.json").exists(),
         })
