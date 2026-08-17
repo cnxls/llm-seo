@@ -30,7 +30,8 @@ export default function App() {
   const handleTrackBrand = (brand: string) => {
     setTrackedBrand(brand);
     setShowWizard(true);
-    navigate('/dashboard');
+    // Stay on the landing page behind the wizard instead of jumping to the
+    // (still-empty) dashboard — onComplete navigates to /run once set up.
   };
 
   return (
