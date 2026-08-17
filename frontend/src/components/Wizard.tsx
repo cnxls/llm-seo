@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Target, Play, TrendingUp, X, Check, ChevronRight, AlertCircle, Sparkles, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { api } from '../api';
@@ -140,7 +141,10 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
     }
   };
 
-  return (
+  // Portal to <body> so the overlay can't inherit layout from AppShell's content
+  // wrapper (its `space-y-6` was applying margin-top to this fixed inset-0 box,
+  // shifting it down and leaving an undimmed strip at the top of the viewport).
+  return createPortal(
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-6 overscroll-contain animate-fade-in-up">
       <div className="bg-card border border-border rounded-2xl shadow-2xl flex flex-col w-full max-w-2xl max-h-[90vh] overflow-hidden">
 
@@ -484,6 +488,7 @@ export default function Wizard({ initialBrand, onClose, onComplete }: WizardProp
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
