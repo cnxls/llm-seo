@@ -2,8 +2,9 @@
 # Tests for mention_analyzer.py
 
 
+import json
 import pytest
-from src.mention_analyzer import MentionsAnalyzer
+from src.mention_analyzer import MentionsAnalyzer, load_answers
 
 
 class TestBrandDetection:
@@ -66,3 +67,62 @@ class TestBrandDetection:
         mentions = MentionsAnalyzer.detect_mentions(text, "Obsidian", target, competitors)
         comp_mention = next((m for m in mentions if m['brand'] == "Notion"), None)
         assert comp_mention['count'] > 0
+
+    def test_case_variant_aliases_counted_once(self):
+        # "Razer" and "razer" are the same alias after lowercasing — a single
+        # mention must not be double-counted.
+        text = "Razer makes good mice."
+        competitors = {"Razer": ["Razer", "razer"]}
+
+        mentions = MentionsAnalyzer.detect_mentions(text, "Logitech", ["Logitech"], competitors)
+
+        comp_mention = next(m for m in mentions if m['brand'] == "Razer")
+        assert comp_mention['count'] == 1
+
+    def test_case_variant_target_aliases_counted_once(self):
+        text = "Razer makes good mice."
+        mentions = MentionsAnalyzer.detect_mentions(text, "Razer", ["Razer", "razer"], {})
+
+        target_mention = next(m for m in mentions if m['brand'] == "Razer")
+        assert target_mention['count'] == 1
+
+    def test_overlapping_aliases_counted_once(self):
+        # "Roam" is contained in "Roam Research" — one occurrence, one count.
+        text = "Roam Research is an option."
+        competitors = {"Roam Research": ["Roam", "Roam Research"]}
+
+        mentions = MentionsAnalyzer.detect_mentions(text, "Obsidian", ["Obsidian"], competitors)
+
+        comp_mention = next(m for m in mentions if m['brand'] == "Roam Research")
+        assert comp_mention['count'] == 1
+
+    def test_handles_none_text(self):
+        mentions = MentionsAnalyzer.detect_mentions(None, "Obsidian", ["Obsidian"], {})
+
+        target_mention = next(m for m in mentions if m['brand'] == "Obsidian")
+        assert target_mention['count'] == 0
+        assert target_mention['found'] is False
+
+
+class TestLoadAnswers:
+
+    def test_skips_null_response_text(self, tmp_path, monkeypatch):
+        run_dir = tmp_path / "data" / "results" / "run_test"
+        run_dir.mkdir(parents=True)
+
+        payload = {
+            "id": 1,
+            "category": "test",
+            "question": "Best note app?",
+            "response": {
+                "openai": {"text": None},
+                "anthropic": {"text": "Obsidian is great."},
+                "google": None,
+            },
+        }
+        (run_dir / "output_1.json").write_text(json.dumps(payload), encoding="utf-8")
+
+        monkeypatch.chdir(tmp_path)
+        answers = load_answers("run_test")
+
+        assert [a.provider for a in answers] == ["anthropic"]

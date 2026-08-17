@@ -55,13 +55,23 @@ def load_answers(run_dir=None):
 
                     if response_data is None:
                         continue
-                        
+
+                    # A provider can return a null/empty body (e.g. OpenAI
+                    # `content: None` on a cut-off completion) — skip it
+                    # instead of letting None reach detect_mentions().
+                    text = response_data.get('text') if isinstance(response_data, dict) else None
+                    if not text:
+                        logger.warning(
+                            f"Skipping empty response from {provider} in {filename}"
+                        )
+                        continue
+
                     answer = Answer(
                         provider=provider,
                         category=data['category'],
                         question_id=data['id'],
                         question=data['question'],
-                        answer=response_data['text']
+                        answer=text
                     )
                     responses.append(answer)
         except FileNotFoundError:
@@ -90,44 +100,63 @@ def load_brands():
 
 
 
+def find_alias_matches(text_lower: str, aliases: list):
+    """Find all alias occurrences, deduplicated by span.
+
+    Aliases that collide after lowercasing (e.g. "Razer" and "razer") produce
+    the same span and are counted once. Overlapping aliases (e.g. "Roam" and
+    "Roam Research") are resolved by keeping the longest match.
+    """
+    spans = []
+    for alias in aliases:
+        if not alias:
+            continue
+        pattern = r'\b' + re.escape(alias.lower()) + r'\b'
+        for match in re.finditer(pattern, text_lower):
+            spans.append((match.start(), match.end()))
+
+    # Same-span duplicates (case-variant aliases) collapse here.
+    spans = sorted(set(spans), key=lambda s: (s[0], -(s[1] - s[0])))
+
+    kept = []
+    last_end = -1
+    for start, end in spans:
+        if start < last_end:
+            # Overlaps a longer match already kept — skip the shorter alias.
+            continue
+        kept.append((start, end))
+        last_end = end
+    return kept
+
+
 class MentionsAnalyzer:
     @staticmethod
     def detect_mentions(text: str, name:str ,target: list, competitors: dict):
+        text = text or ""
         text_lower = text.lower()
         text_length = len(text)
         mentions = []
-        
-        target_matches = []
-        for alias in target:
-            pattern = r'\b' + re.escape(alias.lower()) + r'\b'
-            matches = list(re.finditer(pattern, text_lower))
-            target_matches.extend(matches)
-        
 
-        target_matches.sort(key=lambda m: m.start())
+        target_matches = find_alias_matches(text_lower, target)
+
         mentions.append({
             'brand': name ,
             'is_target': True,
             'found': len(target_matches) > 0,
             'count': len(target_matches),
-            'first_position': target_matches[0].start() if target_matches else None,
+            'first_position': target_matches[0][0] if target_matches else None,
             'text_length': text_length
         })
         
         for brand_name, aliases in competitors.items():
-            brand_matches = []
-            for alias in aliases:
-                pattern = r'\b' + re.escape(alias.lower()) + r'\b'
-                matches = list(re.finditer(pattern, text_lower))
-                brand_matches.extend(matches)
-            
-            brand_matches.sort(key=lambda m: m.start())
+            brand_matches = find_alias_matches(text_lower, aliases)
+
             mentions.append({
                 'brand': brand_name,
                 'is_target': False,
                 'found': len(brand_matches) > 0,
                 'count': len(brand_matches),
-                'first_position': brand_matches[0].start() if brand_matches else None,
+                'first_position': brand_matches[0][0] if brand_matches else None,
                 'text_length': text_length
             })
         

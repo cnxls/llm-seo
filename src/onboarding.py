@@ -36,11 +36,15 @@ Return ONLY the translated JSON object, no other text."""
 
 def build_aliases(name: str) -> list:
     variants = [name, name.lower(), name.replace(" ", "-"), name.replace(" ", "")]
-    seen = []
+    seen_keys = set()
+    result = []
     for v in variants:
-        if v not in seen:
-            seen.append(v)
-    return seen
+        key = v.lower()
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        result.append(v)
+    return result
 
 
 def build_competitors(competitors: list, brand_name: str) -> list:
