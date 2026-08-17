@@ -1,11 +1,27 @@
 import logging
 from typing import Optional, Tuple, Dict, Any
-from openai import AsyncOpenAI, OpenAIError, RateLimitError
-from anthropic import AsyncAnthropic, APIError, RateLimitError as AnthropicRateLimitError
+from openai import (
+    AsyncOpenAI,
+    OpenAIError,
+    RateLimitError,
+    APIConnectionError as OpenAIConnectionError,
+    APITimeoutError as OpenAITimeoutError,
+    InternalServerError as OpenAIInternalServerError,
+)
+from anthropic import (
+    AsyncAnthropic,
+    APIError,
+    RateLimitError as AnthropicRateLimitError,
+    APIConnectionError as AnthropicConnectionError,
+    APITimeoutError as AnthropicTimeoutError,
+    InternalServerError as AnthropicInternalServerError,
+)
 from google import genai
+from google.genai import errors as genai_errors
+from google.genai import types as genai_types
 from google.api_core import exceptions as google_exceptions
 import asyncio as aio
-from src.config_loader import get_provider_config, load_api_key
+from src.config_loader import CONFIG, get_provider_config, load_api_key
 
 # Setup logging
 logging.basicConfig(
@@ -28,6 +44,22 @@ class ProviderNotFoundError(LLMClientError):
 
 _clients = {}
 
+
+def get_llm_setting(provider_name: str, key: str, default: Any = None) -> Any:
+    """Read an `llm.*` setting, letting a provider-level override win.
+
+    `temperature`/`max_tokens`/`timeout_seconds` live under `llm:` in
+    config.yaml, not under `llm.providers.<name>`.
+    """
+    llm_cfg = CONFIG.get("llm", {})
+    provider_cfg = llm_cfg.get("providers", {}).get(provider_name, {}) or {}
+    if key in provider_cfg and provider_cfg[key] is not None:
+        return provider_cfg[key]
+    if llm_cfg.get(key) is not None:
+        return llm_cfg[key]
+    return default
+
+
 def build_client(provider_name: Optional[str] = None) -> Optional[Tuple[str, Any]]:
     
     
@@ -39,20 +71,24 @@ def build_client(provider_name: Optional[str] = None) -> Optional[Tuple[str, Any
           return _clients[provider_name]
 
     try:
+        timeout_seconds = get_llm_setting(provider_name, "timeout_seconds", 60)
+
         if provider_name == "openai":
             api_key = load_api_key("openai")
             logger.info("Building OpenAI client")
-            result = ("openai", AsyncOpenAI(api_key=api_key))
-        
+            result = ("openai", AsyncOpenAI(api_key=api_key, timeout=timeout_seconds))
+
         elif provider_name == "anthropic":
             api_key = load_api_key("anthropic")
             logger.info("Building Anthropic client")
-            result = ("anthropic", AsyncAnthropic(api_key=api_key))
-        
+            result = ("anthropic", AsyncAnthropic(api_key=api_key, timeout=timeout_seconds))
+
         elif provider_name == "google":
             api_key = load_api_key("google")
             logger.info("Building Google Gemini client")
-            result = ("google", genai.Client(api_key=api_key).aio)
+            # google-genai expects the request timeout in milliseconds
+            http_options = genai_types.HttpOptions(timeout=int(timeout_seconds * 1000))
+            result = ("google", genai.Client(api_key=api_key, http_options=http_options).aio)
         
         else:
             raise ProviderNotFoundError(f"Provider '{provider_name}' is not supported")
@@ -66,6 +102,28 @@ def build_client(provider_name: Optional[str] = None) -> Optional[Tuple[str, Any
 
     _clients[provider_name] = result
     return result
+
+
+# Transient failures worth a second chance: rate limits, connection drops,
+# timeouts and 5xx/server-side errors across all three SDKs.
+RETRYABLE_EXCEPTIONS = (
+    RateLimitError,
+    OpenAIConnectionError,
+    OpenAITimeoutError,
+    OpenAIInternalServerError,
+    AnthropicRateLimitError,
+    AnthropicConnectionError,
+    AnthropicTimeoutError,
+    AnthropicInternalServerError,
+    genai_errors.ServerError,
+    google_exceptions.ResourceExhausted,
+    google_exceptions.ServiceUnavailable,
+    google_exceptions.DeadlineExceeded,
+    google_exceptions.InternalServerError,
+    google_exceptions.GatewayTimeout,
+    aio.TimeoutError,
+    ConnectionError,
+)
 
 
 async def call_with_retry(
@@ -83,17 +141,19 @@ async def call_with_retry(
         try:
             return await func()
         
-        except (RateLimitError, AnthropicRateLimitError, google_exceptions.ResourceExhausted) as e:
+        except RETRYABLE_EXCEPTIONS as e:
             last_exception = e
             if attempt < max_retries - 1:
                 logger.warning(
-                    f"Rate limit hit (attempt {attempt + 1}/{max_retries}). "
+                    f"Transient error {type(e).__name__} (attempt {attempt + 1}/{max_retries}). "
                     f"Retrying in {delay:.1f}s..."
                 )
                 await aio.sleep(delay)
                 delay *= backoff_factor
             else:
-                logger.error(f"Rate limit exceeded after {max_retries} attempts")
+                logger.error(
+                    f"Transient error {type(e).__name__} persisted after {max_retries} attempts"
+                )
         
         except Exception as e:
             logger.error(f"Unexpected error: {type(e).__name__}: {e}")
@@ -110,8 +170,8 @@ async def ask_openai(client: AsyncOpenAI, question: str, model: str) -> Dict[str
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": question}
             ],
-            max_completion_tokens=get_provider_config("openai").get("max_tokens", 512),
-            temperature=get_provider_config("openai").get("temperature", 0.7)
+            max_completion_tokens=get_llm_setting("openai", "max_tokens", 512),
+            temperature=get_llm_setting("openai", "temperature", 0.7)
         )
         return response
     
@@ -147,7 +207,8 @@ async def ask_anthropic(client: AsyncAnthropic, question: str, model: str, prefi
             messages.append({"role": "assistant", "content": prefill})
         response = await client.messages.create(
             model=model,
-            max_tokens=max_tokens if max_tokens is not None else get_provider_config("anthropic").get("max_tokens", 512),
+            max_tokens=max_tokens if max_tokens is not None else get_llm_setting("anthropic", "max_tokens", 512),
+            temperature=get_llm_setting("anthropic", "temperature", 0.7),
             messages=messages,
         )
         return response
@@ -181,7 +242,11 @@ async def ask_google(client: genai.Client, question: str, model: str) -> Dict[st
     async def _call():
         response = await client.models.generate_content(
             model=model,
-            contents=question
+            contents=question,
+            config=genai_types.GenerateContentConfig(
+                temperature=get_llm_setting("google", "temperature", 0.7),
+                max_output_tokens=get_llm_setting("google", "max_tokens", 512),
+            ),
         )
         return response
     
