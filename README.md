@@ -12,6 +12,17 @@ This tool helps you:
 - Track changes over time
 - Understand what queries trigger mentions of your brand
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Landing page](docs/screenshots/01-landing.png) | ![Onboarding wizard](docs/screenshots/02-onboarding-wizard.png) |
+| Landing page — enter your brand to start tracking | Onboarding wizard — brand details feed the AI-generated config |
+| ![Review generated config](docs/screenshots/03-review-generated-config.png) | ![Select queries](docs/screenshots/04-select-queries.png) |
+| Review AI-generated competitors, use cases, and category | Pick which queries to run against all three providers |
+| ![Run in progress](docs/screenshots/05-run-in-progress.png) | ![Dashboard](docs/screenshots/06-dashboard.png) |
+| Watch responses stream in live, per provider | Dashboard — mention share, leaderboard, and per-provider breakdown |
+
 ## How it works
 
 1. **Generate queries** — an LLM writes natural, realistic questions a real person would ask about your category, based on your brand's placeholders and use cases
