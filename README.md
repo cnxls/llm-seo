@@ -53,7 +53,8 @@ Run the onboarding wizard from the web dashboard (see below) — it saves a conf
 {
   "brand_name": "Your Brand",
   "description": "",
-  "language": "en",
+  "language": "English",
+  "market": "Global",
   "placeholders": {
     "category": "note-taking app",
     "category_noun": "app",
